@@ -9,8 +9,8 @@ export const app = new App({
 });
 
 // Handlers are registered by importing the modules below (side-effect registration).
-// TODO(Tasks 9-10): re-enable once kudosCommand.ts and boost.ts are created.
-// import "./kudosCommand.js";
+// TODO(Task 10): re-enable once boost.ts is created.
+import "./kudosCommand.js";
 // import "./boost.js";
 
 const port = 3001;
