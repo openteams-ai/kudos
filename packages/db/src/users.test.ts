@@ -42,4 +42,16 @@ describe("linkSlackUser", () => {
     const created = await prisma.user.findUnique({ where: { id } });
     expect(created?.slackUserId).toBe("U555");
   });
+
+  it("preserves existing email/avatar when a later call omits them", async () => {
+    const first = await linkSlackUser({
+      slackUserId: "U777", name: "Grace Hopper", email: "grace@x.com", avatarUrl: "http://img/g.png",
+    });
+    // second call for the SAME slackUserId omits email and avatarUrl
+    const second = await linkSlackUser({ slackUserId: "U777", name: "Grace Hopper" });
+    expect(second.id).toBe(first.id);
+    const after = await prisma.user.findUnique({ where: { id: first.id } });
+    expect(after?.email).toBe("grace@x.com");      // preserved, not nulled
+    expect(after?.avatarUrl).toBe("http://img/g.png"); // preserved, not nulled
+  });
 });
