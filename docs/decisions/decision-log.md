@@ -94,10 +94,16 @@ Deep-research pass complete (27 sources, 25 claims adversarially verified, 23 co
 - **Decision:** Launch a focused deep-research pass on the open questions the first pass couldn't answer: give-allowance model evidence, gamification mechanics (streaks/leaderboards/badges) sustain-vs-gaming, notification cadence/fatigue, peer-recognition points programs, Western/peer-to-peer replication.
 - **Why:** First pass was honest that gamification mechanics are unsubstantiated in its corpus. Play-to-win → close the gap with real citations before finalizing the spec.
 
+### D21. Design for scale from day 1 (org size 50 → 1000+)
+- **Decision:** Build the simple single-workspace version for the demo, but bake in cheap scale hygiene: `teamId`/`workspaceId` in the schema, a cached Slack user directory (respect rate limits), computed-on-read allowance, configurable allowance size, team-scoped visibility hooks, tunable (weekly-digest-default) nudge cadence, and NO global leaderboard.
+- **Why:** Org size changes both behavior (relatedness/Dunbar ~150, feed noise + recognition inflation at 500+, leaderboard demotivation compounding at scale, reward-economics scaling linearly) and tech (Slack rate limits are the real constraint; DB is trivial at these sizes; SQLite→Postgres is a one-line swap via shared Prisma). See `docs/design/scale-considerations.md`. Reinforces D17 (no leaderboard) and D19 (fatigue/inflation). The "how it scales 50→1000+" story strengthens the Maintainability + Effectiveness pitch.
+- **Follow-up:** Pass-3 research queued to validate behavioral-at-scale claims (critical mass, Dunbar, participation power law).
+
 ---
 
 ## Open questions / pending
 - [ ] **Pass-2 research running** → firm up allowance/gamification mechanics with citations; then finalize spec.
+- [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.
 - [ ] Product name (repo currently provisional: `kudos-bounty`).
 - [ ] After spec finalized + user-approved → writing-plans skill for the implementation plan.
