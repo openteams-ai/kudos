@@ -9,6 +9,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.AUTH_SLACK_SECRET,
     }),
   ],
+  trustHost: true,
   session: { strategy: "jwt" },
   callbacks: {
     async signIn({ user, profile }) {
