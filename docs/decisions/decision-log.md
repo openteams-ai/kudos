@@ -121,10 +121,15 @@ Pass-2 complete (see `docs/research/behavioral-research-report-pass2.md`). Confi
 - **Decision:** A *light, opt-in, low-prominence* milestone/badge layer is permissible as a stretch feature; punitive streaks are OUT.
 - **Why:** Hamari (2017) 2-year field experiment: badges raised participation — but only among users who *noticed* them → opt-in visibility, not forced. No evidence for streaks; streak-burnout is a real downside → avoid punitive streaks.
 
+### D25. Simulation Lab = validation artifact (not a core feature)
+- **Decision:** Build the Simulation Lab as a **bounded validation artifact**: a focused script producing the 50/100/500/1000 comparison charts (ABM) + one small (~8–12 agent) generative-agent "day" vignette for the pitch. NOT a first-class product feature. Core Slack+dashboard+rewards build keeps priority in the 4h budget.
+- **Why:** User choice. Captures the wow-factor + Effectiveness/Use-of-AI/Presentation upside without risking the primary product polish. Honest caveats (LLM agents imperfect proxies; sims = hypothesis-generation) per `docs/design/simulation-approach.md` and pending pass-4.
+
 ---
 
 ## Open questions / pending
 - [x] ~~Pass-2 research (gamification mechanics)~~ → **complete**; corrections C1, D22–D24 logged.
+- [x] ~~Simulation scope decision~~ → **D25: validation artifact.**
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
 - [ ] **Pass-4 research** → FAILED early (StructuredOutput retry cap) — retry queued. Feasibility/validity of agent-based + generative-LLM-agent simulation; then decide simulation scope.
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.

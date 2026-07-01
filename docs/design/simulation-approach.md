@@ -57,5 +57,5 @@ A small cast (~8–12) of LLM agents, each a persona ("Sarah, Support, just surv
 - **Presentation:** live "watch 50 agents run a day" + comparison charts = a standout demo beat.
 - **Bonus:** the sim generates realistic seed data for the dashboard.
 
-## Open scope question
-How central is this to the build? (a) **Core deliverable** — build the Simulation Lab as a first-class feature; (b) **Validation artifact** — a small script that produces the charts + one vignette for the pitch; (c) **Research-only for now** — understand feasibility, decide later. Drives how much of the 4h budget it gets.
+## Scope decision (resolved — D25)
+**Validation artifact.** A focused script that produces the 50/100/500/1000 comparison charts (ABM) + one small (~8–12 agent) generative-agent "day" vignette for the pitch. **Not** a first-class product feature — the core Slack+dashboard+rewards build keeps priority in the 4h budget. Pass-4 research (feasibility/validity) will set the honest caveats and the credible build recipe.
