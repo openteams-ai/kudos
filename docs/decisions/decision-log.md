@@ -165,13 +165,19 @@ Pass-4 complete (see `docs/research/behavioral-research-report-pass4.md`; all fi
 
 ---
 
+### D31. Core product BUILT (subagent-driven) — merge-ready
+- **Decision:** Executed the 14-task plan via subagent-driven development (fresh implementer + spec/quality reviewer per task, plus a final opus whole-branch review). All tasks complete on branch `feat/core-product`; **14/14 domain tests pass**; final review verdict **merge-ready, no Critical/Important issues**.
+- **What shipped:** `@kudos/db` (7-model Prisma schema + tested allowance/kudos/boost/redeem logic), `apps/slack` (Bolt Socket Mode `/kudos` modal + reaction boosts, register-function pattern), `apps/web` (Next.js feed + inclusive celebration + rewards catalog/redeem).
+- **Notable review catches (fixed in-branch):** circular-import TDZ crash in the Slack app → register-function pattern; double-`ack()` guard; `addBoost` P2002 idempotency + real branch test; Next `extensionAlias` so `@kudos/db` resolves in webpack.
+- **Consciously deferred (not built):** pulsed weekly nudge (P1 spec item — needs scheduler + live Slack); Simulation Lab (Priority-2, separate plan); live Slack smoke test (needs real tokens).
+- **Accepted tech-debt (logged in `.superpowers/sdd/progress.md`):** pre-transaction TOCTOU on allowance/redeem checks (bounded, single-worker safe); no tsc typecheck gate; vitest `fileParallelism:false`; web queries not yet team-scoped.
+
+---
+
 ## Open questions / pending
-- [x] ~~Pass-1–4 research~~ → **all complete.** Corrections C1–C2; decisions D13–D29 logged.
-- [x] ~~Finalize design spec~~ → **done & approved.**
-- [x] ~~Implementation plan~~ → **core-product plan written (D30).**
-- [ ] **NEXT: execute the plan** (subagent-driven or inline).
-- [ ] Follow-up plan: Simulation Lab (`packages/sim`) after core ships.
-- [ ] Deferred task: pulsed weekly nudge (scheduled job).
+- [x] ~~Pass-1–4 research~~ · ~~design spec~~ · ~~implementation plan~~ · ~~build core product~~ → **all done.**
+- [ ] Integrate branch `feat/core-product` (merge / PR) — finishing-a-development-branch.
+- [ ] Optional next: pulsed weekly nudge; Simulation Lab plan; provide Slack tokens for live demo.
 - [ ] Product name (repo currently provisional: `kudos-bounty`).
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
 - [ ] **Pass-4 research** → FAILED early (StructuredOutput retry cap) — retry queued. Feasibility/validity of agent-based + generative-LLM-agent simulation; then decide simulation scope.
