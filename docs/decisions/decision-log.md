@@ -101,10 +101,32 @@ Deep-research pass complete (27 sources, 25 claims adversarially verified, 23 co
 
 ---
 
+## 2026-06-30 — Session 1 (cont.): Pass-2 outcomes (gamification mechanics)
+
+Pass-2 complete (see `docs/research/behavioral-research-report-pass2.md`). Confirms the core thesis and drove one correction + refinements.
+
+### C1. CORRECTION to D17's rationale (kept the decision, fixed the reason)
+- **What changed:** Pass-1/D17 said "exclusivity demotivates the majority." A closer read of Bradler et al. (2016) shows the effect is **conformity, not demotivation** (non-recipients rose via social comparison), and it was manager→worker, not peer-to-peer. That justification was overstated.
+- **Decision stands:** No competitive public leaderboard — now on **stronger, direct** evidence: Na & Han (2023) controlled experiment shows leaderboards generate *no* intrinsic motivation (complacency at top, frustration at bottom). Kept for a better reason. Intellectual-honesty note preserved rather than silently rewriting D17.
+
+### D22. Refine D18 — allowance as a "fresh gift," never a forfeiture
+- **Decision:** Frame each period's give-allowance as a fresh gift to give away; do NOT frame unused allowance as points "lost." Never claw back or expire *received* recognition/points.
+- **Why:** Loss aversion — reputational loss depresses contribution ~1.5–3× more than an equal gain increases it (StackOverflow study, DSS 2022). A forfeiture frame risks reading as controlling (Frey & Jegen crowding-out). Money/points stay supportive, not punitive.
+
+### D23. Notifications: pulsed weekly trigger, not volume
+- **Decision:** Use a timely, pulsed nudge (default weekly prompt + occasional highlights) as the trigger to give; don't rely on notification volume for retention.
+- **Why:** Notifications drive strong short-term action (up to 3.52× app-open next hour) but do NOT durably improve retention (JMIR MRTs); intermittent/pulsed can outperform continuous ("How Nudges Create Habits"). Reinforces D19/D21.
+
+### D24. Optional light badge/milestone layer is now defensible — but stays stretch
+- **Decision:** A *light, opt-in, low-prominence* milestone/badge layer is permissible as a stretch feature; punitive streaks are OUT.
+- **Why:** Hamari (2017) 2-year field experiment: badges raised participation — but only among users who *noticed* them → opt-in visibility, not forced. No evidence for streaks; streak-burnout is a real downside → avoid punitive streaks.
+
+---
+
 ## Open questions / pending
-- [ ] **Pass-2 research running** → firm up allowance/gamification mechanics with citations; then finalize spec.
+- [x] ~~Pass-2 research (gamification mechanics)~~ → **complete**; corrections C1, D22–D24 logged.
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
-- [ ] **Pass-4 research running** → feasibility/validity of agent-based + generative-LLM-agent simulation of recognition/social systems; then decide simulation scope.
+- [ ] **Pass-4 research** → FAILED early (StructuredOutput retry cap) — retry queued. Feasibility/validity of agent-based + generative-LLM-agent simulation; then decide simulation scope.
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.
 - [ ] Product name (repo currently provisional: `kudos-bounty`).
 - [ ] After spec finalized + user-approved → writing-plans skill for the implementation plan.
