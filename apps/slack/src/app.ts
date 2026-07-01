@@ -2,7 +2,7 @@ import "dotenv/config";
 import pkg from "@slack/bolt";
 const { App } = pkg;
 import { registerKudosCommand } from "./kudosCommand.js";
-// import { registerBoost } from "./boost.js";  // Task 10 re-enables
+import { registerBoost } from "./boost.js";
 
 export const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -11,7 +11,7 @@ export const app = new App({
 });
 
 registerKudosCommand(app);
-// registerBoost(app);  // Task 10
+registerBoost(app);
 
 const port = 3001;
 await app.start(port);
