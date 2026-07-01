@@ -159,11 +159,20 @@ Pass-4 complete (see `docs/research/behavioral-research-report-pass4.md`; all fi
 
 ---
 
+### D30. Design approved → implementation plan written (core product first)
+- **Decision:** User approved the design ("lets build it"). Wrote `docs/superpowers/plans/2026-06-30-kudos-core-product.md` — 14 TDD tasks, product-first. Simulation Lab is a separate later plan (Priority 2). Pulsed weekly nudge deferred to a short follow-up task (flagged in plan self-review).
+- **Why:** Brainstorming → writing-plans handoff. Product-first sequencing guarantees a demoable core within the 4h budget (alignment-check risk #1).
+
+---
+
 ## Open questions / pending
 - [x] ~~Pass-1–4 research~~ → **all complete.** Corrections C1–C2; decisions D13–D29 logged.
-- [ ] **NEXT: finalize the design spec** — fold D13–D29 into `docs/superpowers/specs/…-design.md`; annotate every mechanic + scale tier with its research basis; then spec self-review → user review.
+- [x] ~~Finalize design spec~~ → **done & approved.**
+- [x] ~~Implementation plan~~ → **core-product plan written (D30).**
+- [ ] **NEXT: execute the plan** (subagent-driven or inline).
+- [ ] Follow-up plan: Simulation Lab (`packages/sim`) after core ships.
+- [ ] Deferred task: pulsed weekly nudge (scheduled job).
 - [ ] Product name (repo currently provisional: `kudos-bounty`).
-- [ ] After spec approved → writing-plans skill for the implementation plan.
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
 - [ ] **Pass-4 research** → FAILED early (StructuredOutput retry cap) — retry queued. Feasibility/validity of agent-based + generative-LLM-agent simulation; then decide simulation scope.
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.
