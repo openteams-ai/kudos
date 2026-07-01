@@ -58,8 +58,46 @@ Chronological record of every significant decision, with rationale. Newest entri
 
 ---
 
+## 2026-06-30 — Session 1 (cont.): Research outcomes
+
+Deep-research pass complete (27 sources, 25 claims adversarially verified, 23 confirmed / 2 refuted). Written up in `docs/research/`. Decisions it drove:
+
+### D13. Lead with the message, not the money (crowding-out mitigation)
+- **Decision:** Foreground the peer's written reason + the value; show points small and secondary. Frame everything as "you were recognized," never "you earned $X."
+- **Why:** Crowding-out is real but conditional — only *controlling* rewards undermine intrinsic motivation; *informational* (competence-affirming) ones don't (CET; Deci/Koestner/Ryan meta-analysis; Fang & Gerhart field β=.38). Framing determines direction.
+
+### D14. Require a specific, written reason + a value/category
+- **Decision:** The give flow nudges (or requires) a written "what specifically did they do?" plus a value tag. Discourage empty "great job."
+- **Why:** Verbal praise enhances motivation only when specific, sincere, process-focused (meta-analytic d≈0.33; Henderlong & Lepper).
+
+### D15. Instant feedback loop
+- **Decision:** Kudos posts and points land immediately; no delayed/quarterly reveal as the motivator.
+- **Why:** Immediacy beats magnitude — immediate rewards raise intrinsic motivation independent of size (Woolley & Fishbach).
+
+### D16. Public-by-default + transparent, fixed value criteria
+- **Decision:** Feed + `#kudos` channel public by default; values are a fixed, transparent set.
+- **Why:** Public recognition's benefit flows through *perceived organizational justice* (Bradler et al. field experiment ~5.2% lift + observer spillover; 2023 justice-mediation study). Fairness/consistency is the engine.
+
+### D17. ⚠️ REVISED D8 — no winner-take-all leaderboard
+- **Decision:** Drop the competitive "top-3 this month" scoreboard as a primary mechanic. Replace with inclusive celebration surfaces (full feed, "everyone recognized this week," rotating spotlights, optional team/value stats). Any ranking is opt-in, low-stakes, celebrates many.
+- **Why:** Field evidence shows exclusive/scarce recognition can demotivate the majority (recipients rose only 3.3% vs non-recipients >10%), and "exclusive beats universal" was NOT statistically significant (Bradler et al.). Evidence-based, defensible to judges.
+
+### D18. D7 allowance = HYPOTHESIS with a framing mandate
+- **Decision:** Keep the monthly give-allowance, but (a) frame it as "your monthly *gift* to give away" (autonomy-supportive), (b) never punish/shame unused allowance, (c) never require giving, (d) reward the *recognized*, not the *recognizer* (anti-gaming).
+- **Why:** Research surfaced NO evidence for the allowance model and warns a spend-it-or-lose-it quota could read as *controlling* (crowding-out). Framing keeps it on the safe side of the evidence. To be tested in pass 2.
+
+### D19. Design against named anti-patterns
+- **Decision:** Explicitly mitigate: recognition inflation (require value+reason, soft caps), reciprocity/favoritism gaming (public visibility; don't reward giving volume), notification fatigue (conservative weekly batched nudge, user-controllable), extrinsic backfire (money modest/downstream/bonus-framed).
+- **Why:** Skeptical-angle sources + verification caveats. See `docs/research/design-implications.md`.
+
+### D20. Run a second, targeted academic pass on the evidence gaps
+- **Decision:** Launch a focused deep-research pass on the open questions the first pass couldn't answer: give-allowance model evidence, gamification mechanics (streaks/leaderboards/badges) sustain-vs-gaming, notification cadence/fatigue, peer-recognition points programs, Western/peer-to-peer replication.
+- **Why:** First pass was honest that gamification mechanics are unsubstantiated in its corpus. Play-to-win → close the gap with real citations before finalizing the spec.
+
+---
+
 ## Open questions / pending
-- [ ] Await deep-research report → validate/adjust D7–D8 mechanics against evidence.
-- [ ] Run dedicated academic-sources pass → attach primary citations to each design decision.
-- [ ] Product name (repo currently provisional).
-- [ ] Finalize design spec in `docs/superpowers/specs/` → then writing-plans skill for the implementation plan.
+- [ ] **Pass-2 research running** → firm up allowance/gamification mechanics with citations; then finalize spec.
+- [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.
+- [ ] Product name (repo currently provisional: `kudos-bounty`).
+- [ ] After spec finalized + user-approved → writing-plans skill for the implementation plan.

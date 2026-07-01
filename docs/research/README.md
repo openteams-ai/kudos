@@ -18,7 +18,8 @@ This folder holds the evidence base for the product's design. The goal: every ma
 
 ## Status
 
-🟡 Deep-research workflow running (background). Academic-sources pass queued to follow.
+🟢 **Pass 1 complete** — `behavioral-research-report.md`, `academic-sources.md`, `design-implications.md` written (27 sources, 25 claims adversarially verified, 23 confirmed / 2 refuted).
+🟡 **Pass 2 running** — targeted academic pass on the evidence gaps: give-allowance model, gamification mechanics (streaks/leaderboards/badges), notification fatigue, peer-recognition points programs. Will append `behavioral-research-report-pass2.md`.
 
 ## Sourcing policy
 
