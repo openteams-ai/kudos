@@ -104,6 +104,7 @@ Deep-research pass complete (27 sources, 25 claims adversarially verified, 23 co
 ## Open questions / pending
 - [ ] **Pass-2 research running** → firm up allowance/gamification mechanics with citations; then finalize spec.
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
+- [ ] **Pass-4 research running** → feasibility/validity of agent-based + generative-LLM-agent simulation of recognition/social systems; then decide simulation scope.
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.
 - [ ] Product name (repo currently provisional: `kudos-bounty`).
 - [ ] After spec finalized + user-approved → writing-plans skill for the implementation plan.
