@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "./client.js";
 import { remainingAllowance } from "./points.js";
 
@@ -44,12 +45,19 @@ export async function addBoost(input: { kudosId: string; fromUserId: string }): 
   if (existing) return { added: false };
 
   const kudos = await prisma.kudos.findUniqueOrThrow({ where: { id: kudosId } });
-  await prisma.$transaction(async (tx) => {
-    await tx.boost.create({ data: { kudosId, fromUserId, points: BOOST_POINTS } });
-    await tx.user.update({
-      where: { id: kudos.toUserId },
-      data: { redeemableBalance: { increment: BOOST_POINTS } },
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.boost.create({ data: { kudosId, fromUserId, points: BOOST_POINTS } });
+      await tx.user.update({
+        where: { id: kudos.toUserId },
+        data: { redeemableBalance: { increment: BOOST_POINTS } },
+      });
     });
-  });
+  } catch (e) {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      return { added: false };
+    }
+    throw e;
+  }
   return { added: true };
 }

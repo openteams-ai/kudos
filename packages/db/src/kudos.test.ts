@@ -67,4 +67,21 @@ describe("addBoost", () => {
     const receiver = await prisma.user.findUnique({ where: { id: b.id } });
     expect(receiver?.redeemableBalance).toBe(POINTS_PER_KUDOS + BOOST_POINTS);
   });
+
+  it("treats a unique-constraint conflict on create as a duplicate (returns added:false, no double-credit)", async () => {
+    const { a, b, c } = await trio();
+    await giveKudos({ fromUserId: a.id, toUserId: b.id, valueKey: "friend", message: "nice" });
+    const kudos = await prisma.kudos.findFirstOrThrow();
+
+    // Simulate the row already existing (as if a concurrent request beat us to it),
+    // bypassing addBoost's own findUnique pre-check.
+    await prisma.boost.create({ data: { kudosId: kudos.id, fromUserId: c.id, points: BOOST_POINTS } });
+
+    const before = await prisma.user.findUniqueOrThrow({ where: { id: b.id } });
+
+    await expect(addBoost({ kudosId: kudos.id, fromUserId: c.id })).resolves.toEqual({ added: false });
+
+    const after = await prisma.user.findUniqueOrThrow({ where: { id: b.id } });
+    expect(after.redeemableBalance).toBe(before.redeemableBalance);
+  });
 });
