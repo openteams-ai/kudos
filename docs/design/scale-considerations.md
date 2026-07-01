@@ -3,7 +3,10 @@
 **Question:** Does company size (50 / 100 / 500 / 1000+ employees) change how this system should be designed and built?
 **Answer:** Yes — on two independent axes: **behavioral/program dynamics** and **technical architecture**. The behavioral effects are the bigger design driver; the technical scaling is modest until Slack rate limits.
 
-> Status: 🟡 Behavioral-at-scale claims (critical mass, Dunbar, participation power law) to be validated by a focused research pass. Technical reasoning is engineering judgment. Sections tagged _(needs research)_ accordingly.
+> Status: 🟢 Behavioral-at-scale claims **validated by pass-3 research** (see `docs/research/behavioral-research-report-pass3.md`). Two updates folded in below: (a) the **scope-artifact** finding is the headline lever for team-scoping; (b) **Dunbar ~150 is a soft ~150–300 zone, not a hard ceiling** (the hard-ceiling claim was refuted). Technical reasoning remains engineering judgment.
+
+## ⭐ The key evidence-based lever (pass-3, Finding 1)
+Participation inequality is largely an **artifact of scope**: the same GitHub population shows ~82% active contributors platform-wide but flips to **~2% contributors / ~87% watchers** in the 500 largest projects (Gasparini et al., OpenSym 2020) — contributor share falls ~10× as the visible group grows. **Therefore: scoping recognition to small sub-groups (50–150) keeps participation broad; a single company-wide feed goes quiet at scale.** This *quantifies* why we federate by team.
 
 ---
 
@@ -16,7 +19,7 @@ Recognition draws its power from **relatedness** (SDT) and **perceived fairness*
 |---|---|---|---|
 | **~50** | Everyone knows everyone; high relatedness | Low volume → **"ghost-town feed"**; reciprocity/favoritism visible to all | Seed with leadership giving first; low barrier; single company-wide feed is fine |
 | **~100** | Approaching relationship ceiling | Cliques; some people never recognized | Encourage cross-team giving; surface "not recognized lately" gently |
-| **~150 (Dunbar)** _(needs research)_ | Upper bound of real relationships | Beyond this, most colleagues are strangers → recognition feels abstract | **Introduce team/department scoping** as the default lens |
+| **~150–300 (soft Dunbar zone)** | Relationship-based reciprocal recognition thins across this gradient (not a hard line — 150-ceiling claim refuted; online ties may reach 200–300) | Beyond the zone, most colleagues are strangers → recognition feels abstract | **Introduce team/department scoping** as the default lens (gradient, not a switch) |
 | **~500** | Multiple sub-communities | Single `#kudos` channel = **firehose → notification fatigue + recognition inflation**; individual kudos lose salience | Team channels + a global highlight/digest; per-team feeds; batched digests |
 | **1000+** | Federation of teams | Global anything (feed, leaderboard) is noise and demotivating | Team-first surfaces; org-level rollups for leadership only; strong filtering |
 

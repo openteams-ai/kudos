@@ -127,9 +127,33 @@ Pass-2 complete (see `docs/research/behavioral-research-report-pass2.md`). Confi
 
 ---
 
+## 2026-06-30 — Session 1 (cont.): Pass-3 outcomes (org size & scale)
+
+Pass-3 complete (see `docs/research/behavioral-research-report-pass3.md`). Strongly validates D21 and adds refinements.
+
+### D26. Team-scoped recognition is the primary scaling lever (upgrades D21)
+- **Decision:** Federate recognition by team/department at 500+; single company feed only at small N. Model `teamId` from day 1; default the visibility lens to the team as N grows.
+- **Why:** Participation inequality is largely an **artifact of scope** — same population, ~82% contributors platform-wide vs ~2% in the 500 largest projects (Gasparini et al., OpenSym 2020). Small scopes keep participation broad; a global feed concentrates activity and goes quiet. This *quantifies* why we federate. Not just tidy — it's the lever that keeps the tool alive at scale.
+
+### C2. CORRECTION — Dunbar ~150 is a soft zone, not a hard ceiling
+- **What changed:** `scale-considerations.md` leaned on ~150 as a threshold. The hard neocortex-ceiling claim is **refuted** (Lindenfors et al. 2021: estimates 16–109, CIs 4–520); online ties may reach 200–300.
+- **Decision:** Treat **~150–300 as a soft gradient zone** where relationship-based reciprocal recognition thins; scope by team as a gradient, not a switch. Doc updated.
+
+### D27. Rollout principle — seed diverse early givers; support core recognizers
+- **Decision:** Adoption plan seeds a *diverse cross-section* of early givers across teams (not a few power-users); identify/support core recognizers; watch per-team giver redundancy as a leading indicator of a dying feed.
+- **Why:** Critical mass is set early by contributor **diversity**, not headcount (Solomon & Wash 2010); a concentrated core determines survival and fragility is structural from inception (Abufouda 2018).
+
+### D28. Success metrics are per-dimension, not headcount
+- **Decision:** Track participation **breadth** (% giving/receiving), retention, and sustained volume per tier — not user count or total kudos.
+- **Why:** Community success is multi-dimensional and weakly correlated across measures (Cunha/Zhang et al., WWW 2019). Also: expect a truncated-power-law core (~¾ lurkers, not 90%) — design to broaden the base.
+
+---
+
 ## Open questions / pending
 - [x] ~~Pass-2 research (gamification mechanics)~~ → **complete**; corrections C1, D22–D24 logged.
+- [x] ~~Pass-3 research (org size & scale)~~ → **complete**; D26–D28, correction C2 logged.
 - [x] ~~Simulation scope decision~~ → **D25: validation artifact.**
+- [ ] **Pass-4 research running** (retried) → simulation validity; then write up + finalize spec.
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
 - [ ] **Pass-4 research** → FAILED early (StructuredOutput retry cap) — retry queued. Feasibility/validity of agent-based + generative-LLM-agent simulation; then decide simulation scope.
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.
