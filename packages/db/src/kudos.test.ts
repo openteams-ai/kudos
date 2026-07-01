@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { Prisma } from "@prisma/client";
 import { prisma } from "./client.js";
 import { giveKudos, addBoost, POINTS_PER_KUDOS, BOOST_POINTS } from "./kudos.js";
 
@@ -53,6 +54,7 @@ describe("giveKudos", () => {
 
 describe("addBoost", () => {
   beforeEach(reset);
+  afterEach(() => vi.restoreAllMocks());
 
   it("adds boost points once and is idempotent per user", async () => {
     const { a, b, c } = await trio();
@@ -83,5 +85,30 @@ describe("addBoost", () => {
 
     const after = await prisma.user.findUniqueOrThrow({ where: { id: b.id } });
     expect(after.redeemableBalance).toBe(before.redeemableBalance);
+  });
+
+  it("swallows a P2002 raised inside the transaction (fast-path skipped, catch branch exercised)", async () => {
+    const { a, b, c } = await trio();
+    await giveKudos({ fromUserId: a.id, toUserId: b.id, valueKey: "friend", message: "nice" });
+    const kudos = await prisma.kudos.findFirstOrThrow();
+
+    // No pre-existing Boost row for c, so addBoost's findUnique fast-path returns null
+    // and execution reaches the try/catch around prisma.$transaction.
+    const before = await prisma.user.findUniqueOrThrow({ where: { id: b.id } });
+
+    const spy = vi.spyOn(prisma, "$transaction").mockRejectedValueOnce(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {
+        code: "P2002",
+        clientVersion: "5.20.0",
+      })
+    );
+
+    const res = await addBoost({ kudosId: kudos.id, fromUserId: c.id });
+    expect(res.added).toBe(false);
+
+    const after = await prisma.user.findUniqueOrThrow({ where: { id: b.id } });
+    expect(after.redeemableBalance).toBe(before.redeemableBalance);
+
+    spy.mockRestore();
   });
 });
