@@ -2,7 +2,7 @@
   "name": "@kudos/slack",
   "version": "0.0.0",
   "type": "module",
-  "scripts": { "dev": "tsx watch src/app.ts", "start": "tsx src/app.ts" },
+  "scripts": { "dev": "tsx watch src/app.ts", "start": "tsx src/app.ts", "verify": "tsx src/verify.ts" },
   "dependencies": {
     "@kudos/db": "*",
     "@slack/bolt": "^3.22.0",

@@ -1,0 +1,34 @@
+# Slack app manifest for the Kudos bot.
+# Create the app in one step:
+#   https://api.slack.com/apps  ->  "Create New App"  ->  "From a manifest"
+#   -> pick your workspace -> paste this YAML -> Create.
+# Then: Install to Workspace (grab the xoxb- Bot Token from OAuth & Permissions),
+#       and under "Basic Information" -> App-Level Tokens, generate a token with
+#       scope `connections:write` (the xapp- token). Put both in apps/slack/.env.
+display_information:
+  name: Kudos
+  description: Recognize teammates for going above and beyond.
+  background_color: "#2eb67d"
+features:
+  bot_user:
+    display_name: kudos
+    always_online: true
+  slash_commands:
+    - command: /kudos
+      description: Recognize a teammate for going above and beyond
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - commands        # /kudos slash command
+      - chat:write      # post the recognition to #kudos
+      - users:read      # resolve display names
+      - reactions:read  # detect emoji boosts
+settings:
+  event_subscriptions:
+    bot_events:
+      - reaction_added  # emoji reaction -> boost
+  interactivity:
+    is_enabled: true    # required for the /kudos modal (view submissions)
+  socket_mode_enabled: true   # no public URL / ngrok needed
+  token_rotation_enabled: false
