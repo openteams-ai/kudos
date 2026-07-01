@@ -1,6 +1,8 @@
 import "dotenv/config";
 import pkg from "@slack/bolt";
 const { App } = pkg;
+import { registerKudosCommand } from "./kudosCommand.js";
+// import { registerBoost } from "./boost.js";  // Task 10 re-enables
 
 export const app = new App({
   token: process.env.SLACK_BOT_TOKEN,
@@ -8,10 +10,8 @@ export const app = new App({
   socketMode: true,
 });
 
-// Handlers are registered by importing the modules below (side-effect registration).
-// TODO(Task 10): re-enable once boost.ts is created.
-import "./kudosCommand.js";
-// import "./boost.js";
+registerKudosCommand(app);
+// registerBoost(app);  // Task 10
 
 const port = 3001;
 await app.start(port);
