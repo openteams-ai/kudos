@@ -1,0 +1,12 @@
+{
+  "name": "@kudos/slack",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": { "dev": "tsx watch src/app.ts", "start": "tsx src/app.ts" },
+  "dependencies": {
+    "@kudos/db": "*",
+    "@slack/bolt": "^3.22.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": { "tsx": "^4.19.0", "typescript": "^5.6.0" }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "kudos-bounty",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*", "apps/*"],
+  "scripts": {
+    "db:generate": "npm -w @kudos/db run generate",
+    "db:push": "npm -w @kudos/db run push",
+    "db:seed": "npm -w @kudos/db run seed",
+    "dev:slack": "npm -w @kudos/slack run dev",
+    "dev:web": "npm -w @kudos/web run dev",
+    "test": "npm -w @kudos/db run test"
+  }
+}

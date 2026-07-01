@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Team {
+  id            String  @id @default(cuid())
+  workspaceId   String  @default("demo-workspace")
+  name          String
+  slackChannelId String?
+  users         User[]
+  kudos         Kudos[]
+}
+
+model User {
+  id               String   @id @default(cuid())
+  slackUserId      String?  @unique
+  teamId           String
+  team             Team     @relation(fields: [teamId], references: [id])
+  name             String
+  avatarUrl        String?
+  email            String?
+  redeemableBalance Int     @default(0)
+  isAdmin          Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  kudosGiven       Kudos[]  @relation("given")
+  kudosReceived    Kudos[]  @relation("received")
+  boosts           Boost[]
+  redemptions      Redemption[]
+}
+
+model Value {
+  id          String  @id @default(cuid())
+  key         String  @unique
+  label       String
+  emoji       String
+  description String
+}
+
+model Kudos {
+  id            String   @id @default(cuid())
+  fromUserId    String
+  fromUser      User     @relation("given", fields: [fromUserId], references: [id])
+  toUserId      String
+  toUser        User     @relation("received", fields: [toUserId], references: [id])
+  teamId        String
+  team          Team     @relation(fields: [teamId], references: [id])
+  valueKey      String
+  message       String
+  points        Int
+  createdAt     DateTime @default(now())
+  slackMessageTs String?
+  boosts        Boost[]
+}
+
+model Boost {
+  id         String   @id @default(cuid())
+  kudosId    String
+  kudos      Kudos    @relation(fields: [kudosId], references: [id])
+  fromUserId String
+  fromUser   User     @relation(fields: [fromUserId], references: [id])
+  points     Int      @default(1)
+  createdAt  DateTime @default(now())
+  @@unique([kudosId, fromUserId])
+}
+
+model Reward {
+  id        String  @id @default(cuid())
+  name      String
+  cost      Int
+  imageUrl  String?
+  category  String
+  redemptions Redemption[]
+}
+
+model Redemption {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  rewardId  String
+  reward    Reward   @relation(fields: [rewardId], references: [id])
+  cost      Int
+  status    String   @default("requested")
+  createdAt DateTime @default(now())
+}

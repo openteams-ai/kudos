@@ -42,4 +42,19 @@ TypeScript end-to-end: **Next.js** dashboard (+ Prisma) and a **Slack Bolt** bot
 
 ---
 
+## Run locally (demo)
+
+```bash
+npm install
+npm run db:generate && npm run db:push && npm run db:seed
+# Terminal 1 — Slack bot (needs apps/slack/.env from .env.example)
+npm run dev:slack
+# Terminal 2 — dashboard
+npm run dev:web   # http://localhost:3000
+```
+
+Run tests: `npm test`
+
+---
+
 _This project is developed with AI assistance (Claude Code). The development process itself is part of the "Use of AI" story and is documented throughout._
