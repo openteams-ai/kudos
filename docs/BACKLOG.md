@@ -15,7 +15,7 @@ Legend: ✅ done · 🟡 in design · ⬜ not started · 🔁 enhancement of exi
 - ✅ Live Slack connection (Socket Mode) + token-verify + app manifest
 
 ## v2 — requested, prioritized (identity first, per user)
-1. 🟡 **Sign in with Slack (SSO)** — identity backbone; brokers company SSO; links web-you to Slack-you. *(in design)*
+1. ✅ **Sign in with Slack (SSO)** — identity backbone; `linkSlackUser` unifies web+bot on one `User`; `getCurrentUser()` replaces the fake user; header sign in/out; rewards gated on login. Merge-ready (18/18 tests). **Live OAuth = manual step: add redirect URL + `openid/email/profile` user scopes, reinstall the app.** Post-merge polish: `next-auth.d.ts` type augmentation; `cache()` on `getCurrentUser`.
 2. ⬜ **Full web UI refactor** — proper UX overhaul (user emphasized). Becomes the vehicle for cart/checkout/history UX.
 3. ⬜ **Rewards cart + checkout** — add multiple rewards, review, check out (like a real store).
 4. ⬜ **Redemption history** — per-user record of rewards used (data already in `Redemption`; needs UI + auth).
