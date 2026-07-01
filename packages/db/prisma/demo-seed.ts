@@ -1,0 +1,160 @@
+// Demo-data generator — fills the DB with a believable team + ~4 weeks of
+// realistic kudos, boosts, and point balances so the dashboard looks alive.
+// Safe to re-run: it clears prior activity (kudos/boosts/redemptions) and
+// regenerates, while preserving any real Slack-linked users.
+//   npm run db:demo
+import { prisma, giveKudos, addBoost, currentPeriod } from "../src/index.js";
+
+const VALUE_DEFS = [
+  { key: "friend", label: "Great Friend", emoji: "🤝", description: "Went out of their way to support a teammate." },
+  { key: "client_hero", label: "Client Hero", emoji: "🛟", description: "Expertly handled a difficult client." },
+  { key: "crisis", label: "Crisis Crusher", emoji: "🚨", description: "Provided critical help during a crisis." },
+  { key: "craft", label: "Craftsmanship", emoji: "🛠️", description: "Raised the bar on quality." },
+  { key: "teamwork", label: "Teamwork", emoji: "🧩", description: "Made the whole team better." },
+];
+
+const REWARD_DEFS = [
+  { name: "Sticker Pack", cost: 20, category: "swag" },
+  { name: "Coffee Gift Card ($5)", cost: 50, category: "giftcard" },
+  { name: "Company T-Shirt", cost: 120, category: "swag" },
+  { name: "Hoodie", cost: 250, category: "swag" },
+  { name: "Lunch Gift Card ($25)", cost: 300, category: "giftcard" },
+  { name: "Extra Day Off", cost: 1000, category: "experience" },
+];
+
+const CAST = [
+  "Ada Lovelace", "Ben Carter", "Cy Nguyen", "Dana Ruiz", "Evan Park", "Farah Aziz",
+  "Grace Hopper", "Hana Kim", "Ravi Patel", "Sofia Marino", "Liam O'Brien",
+  "Mia Chen", "Noah Weber", "Priya Nair",
+];
+
+const MESSAGES: Record<string, string[]> = {
+  friend: [
+    "stayed late to help me untangle a gnarly merge conflict",
+    "checked in on me during a rough week — it meant a lot",
+    "covered my on-call so I could make it to my kid's recital",
+    "brought me coffee and moral support before the big review",
+  ],
+  client_hero: [
+    "calmed down a furious client and turned the whole call around",
+    "wrote the clearest customer update I've ever read",
+    "handled the escalation solo and saved the account",
+    "spent an hour walking a confused customer through setup, no complaints",
+  ],
+  crisis: [
+    "jumped on the 2am outage and had us back in twenty minutes",
+    "kept a cool head during the prod incident and coordinated the fix",
+    "caught the data bug before it ever reached customers",
+    "rewrote the failing deploy script under pressure and unblocked the release",
+  ],
+  craft: [
+    "refactored the auth module — it's finally readable",
+    "wrote tests that caught three real bugs before release",
+    "shipped a UI detail nobody asked for but everyone loves",
+    "left the codebase noticeably cleaner than they found it",
+  ],
+  teamwork: [
+    "unblocked three different people in a single standup",
+    "paired with the new hire all afternoon to get them ramped",
+    "volunteered for the boring migration so the rest of us could focus",
+    "quietly kept the whole sprint on track",
+  ],
+};
+
+const rand = () => Math.random();
+const pick = <T>(a: T[]): T => a[Math.floor(rand() * a.length)];
+const shuffle = <T>(a: T[]): T[] => a.slice().sort(() => rand() - 0.5);
+
+async function main() {
+  const DAYS = 28;
+  const DAY_MS = 24 * 60 * 60 * 1000;
+
+  // 1) Clear prior activity; reset balances. Structure (values/rewards) preserved.
+  await prisma.redemption.deleteMany();
+  await prisma.boost.deleteMany();
+  await prisma.kudos.deleteMany();
+  await prisma.user.updateMany({ data: { redeemableBalance: 0 } });
+
+  // 2) Ensure a team.
+  let team = await prisma.team.findFirst();
+  if (!team) team = await prisma.team.create({ data: { name: "Engineering" } });
+
+  // 3) Ensure values + rewards exist.
+  for (const v of VALUE_DEFS) await prisma.value.upsert({ where: { key: v.key }, update: {}, create: v });
+  if ((await prisma.reward.count()) === 0) for (const r of REWARD_DEFS) await prisma.reward.create({ data: r });
+
+  // 4) Ensure the demo cast (create missing by name; preserves real Slack-linked users).
+  for (const name of CAST) {
+    const exists = await prisma.user.findFirst({ where: { name } });
+    if (!exists) await prisma.user.create({ data: { name, teamId: team.id } });
+  }
+  const users = await prisma.user.findMany();
+  const valueKeys = VALUE_DEFS.map((v) => v.key);
+
+  // 5) Generate kudos across the last 28 days (giveKudos enforces the monthly
+  //    allowance and credits the receiver's redeemable balance).
+  const kudos: { id: string; toUserId: string }[] = [];
+  for (let d = DAYS - 1; d >= 0; d--) {
+    const perDay = 2 + Math.floor(rand() * 4); // 2–5 kudos/day
+    for (let k = 0; k < perDay; k++) {
+      const from = pick(users);
+      const to = pick(users);
+      if (to.id === from.id) continue;
+      const valueKey = pick(valueKeys);
+      const message = pick(MESSAGES[valueKey]);
+      const when = new Date(Date.now() - d * DAY_MS + Math.floor(rand() * DAY_MS));
+      try {
+        const res = await giveKudos({ fromUserId: from.id, toUserId: to.id, valueKey, message, now: when });
+        kudos.push({ id: res.id, toUserId: to.id });
+      } catch {
+        /* monthly allowance exhausted for this giver — skip */
+      }
+    }
+  }
+
+  // 5b) Current-month burst so the "Recognized this month" strip is lively
+  //     (otherwise sparse right after a month rollover). Spreads across many
+  //     distinct receivers, dated within the current calendar month up to now.
+  const { start: monthStart } = currentPeriod();
+  const nowMs = Date.now();
+  const monthSpan = Math.max(1, nowMs - monthStart.getTime());
+  const receivers = shuffle(users);
+  for (let i = 0; i < Math.min(18, users.length * 3); i++) {
+    const to = receivers[i % receivers.length];
+    const from = pick(users.filter((u) => u.id !== to.id));
+    const valueKey = pick(valueKeys);
+    const message = pick(MESSAGES[valueKey]);
+    const when = new Date(monthStart.getTime() + Math.floor(rand() * monthSpan));
+    try {
+      const res = await giveKudos({ fromUserId: from.id, toUserId: to.id, valueKey, message, now: when });
+      kudos.push({ id: res.id, toUserId: to.id });
+    } catch {
+      /* allowance exhausted — skip */
+    }
+  }
+
+  // 6) Boosts on ~45% of kudos (never the receiver boosting their own).
+  let boosts = 0;
+  for (const k of kudos) {
+    if (rand() > 0.45) continue;
+    const candidates = shuffle(users.filter((u) => u.id !== k.toUserId)).slice(0, 1 + Math.floor(rand() * 3));
+    for (const b of candidates) {
+      try {
+        const r = await addBoost({ kudosId: k.id, fromUserId: b.id });
+        if (r.added) boosts++;
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  const { start } = currentPeriod();
+  const thisMonth = await prisma.kudos.count({ where: { createdAt: { gte: start } } });
+  const topBalance = await prisma.user.findFirst({ orderBy: { redeemableBalance: "desc" } });
+  console.log(
+    `Demo data ready: ${users.length} users, ${kudos.length} kudos (${thisMonth} this month), ${boosts} boosts. ` +
+      `Top redeemable balance: ${topBalance?.name} @ ${topBalance?.redeemableBalance} pts.`
+  );
+}
+
+main().finally(() => prisma.$disconnect());
