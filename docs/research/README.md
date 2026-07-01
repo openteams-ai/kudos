@@ -16,10 +16,16 @@ This folder holds the evidence base for the product's design. The goal: every ma
 
 3. **`design-implications.md`** — the bridge: each research finding → concrete design decision in the product.
 
-## Status
+## Status — all 4 passes complete 🟢
 
-🟢 **Pass 1 complete** — `behavioral-research-report.md`, `academic-sources.md`, `design-implications.md` written (27 sources, 25 claims adversarially verified, 23 confirmed / 2 refuted).
-🟡 **Pass 2 running** — targeted academic pass on the evidence gaps: give-allowance model, gamification mechanics (streaks/leaderboards/badges), notification fatigue, peer-recognition points programs. Will append `behavioral-research-report-pass2.md`.
+| Pass | Topic | Report |
+|---|---|---|
+| 1 | Behavioral foundations (nudge, SDT, recognition, habit) | `behavioral-research-report.md` |
+| 2 | Gamification mechanics (allowance, leaderboards, streaks, badges, notifications) | `behavioral-research-report-pass2.md` |
+| 3 | Org size & scale (critical mass, Dunbar, participation inequality) | `behavioral-research-report-pass3.md` |
+| 4 | Simulation validity (ABM + generative LLM agents) | `behavioral-research-report-pass4.md` |
+
+Design translation across all passes: `design-implications.md`. Scale specifics: `../design/scale-considerations.md`. Simulation method: `../design/simulation-approach.md`. Two honest corrections along the way (C1: leaderboard rationale; C2: Dunbar soft-zone) are recorded in the decision log.
 
 ## Sourcing policy
 

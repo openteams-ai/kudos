@@ -149,11 +149,21 @@ Pass-3 complete (see `docs/research/behavioral-research-report-pass3.md`). Stron
 
 ---
 
+## 2026-06-30 — Session 1 (cont.): Pass-4 outcomes (simulation validity)
+
+Pass-4 complete (see `docs/research/behavioral-research-report-pass4.md`; all findings high-confidence 3-0).
+
+### D29. Simulation methodology guardrails (refines D25)
+- **Decision:** (a) **ABM** produces the quantitative 50/100/500/1000 charts — parsimonious, parameters grounded in pass-1/2/3 with provenance labeled, multi-seed + sensitivity analysis. (b) **LLM generative agents** are used ONLY for the qualitative "day unfolds" vignette (~8–12 agents) — **never** for participation/inequality numbers. (c) All results framed as **directional hypotheses to A/B test in deployment**; no quantitative adoption/ROI/inequality claims. (d) The ABM is presented as a literature-grounded *what-if*, not a validated predictor (no real employee data pre-deployment).
+- **Why:** LLM agents are documented overly agreeable + homogeneous (variance 20–300× too low) → can't model inequality (Wu et al. 2025; Larooij & Törnberg 2025; Park et al. 2023). ABM validity is limited by equifinality + over-parameterization (Windrum/Fagiolo/Moneta 2007; JASSS 10/2/8). Honest framing IS the credibility signal the validation literature demands. Calibration template if data later exists: Janssen/DeCaro/Lee (2022, NetLogo BehaviorSearch).
+
+---
+
 ## Open questions / pending
-- [x] ~~Pass-2 research (gamification mechanics)~~ → **complete**; corrections C1, D22–D24 logged.
-- [x] ~~Pass-3 research (org size & scale)~~ → **complete**; D26–D28, correction C2 logged.
-- [x] ~~Simulation scope decision~~ → **D25: validation artifact.**
-- [ ] **Pass-4 research running** (retried) → simulation validity; then write up + finalize spec.
+- [x] ~~Pass-1–4 research~~ → **all complete.** Corrections C1–C2; decisions D13–D29 logged.
+- [ ] **NEXT: finalize the design spec** — fold D13–D29 into `docs/superpowers/specs/…-design.md`; annotate every mechanic + scale tier with its research basis; then spec self-review → user review.
+- [ ] Product name (repo currently provisional: `kudos-bounty`).
+- [ ] After spec approved → writing-plans skill for the implementation plan.
 - [ ] **Pass-3 research running** → validate behavioral-at-scale claims (critical mass, Dunbar ~150, feed noise, participation distribution).
 - [ ] **Pass-4 research** → FAILED early (StructuredOutput retry cap) — retry queued. Feasibility/validity of agent-based + generative-LLM-agent simulation; then decide simulation scope.
 - [ ] Update design spec §6–§7 (points model + mechanics) per D13–D19; add "research basis" to each mechanic.

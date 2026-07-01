@@ -46,10 +46,11 @@ A small cast (~8–12) of LLM agents, each a persona ("Sarah, Support, just surv
 
 ---
 
-## Honest validity caveats (to research + state openly)
-- **LLM agents are imperfect human proxies** — known to be overly agreeable, homogeneous, and to under-model social friction, conflict avoidance, and status anxiety. Directionally useful, not proof.
-- **ABM is only as good as its calibration** — garbage parameters → garbage emergent behavior. We ground parameters in cited findings and label assumptions.
-- **Treat sims as hypothesis-generation**, not evidence. They show *how the mechanics interact at scale*, and stress-test the design — they don't prove human uptake.
+## Honest validity caveats (validated by pass-4 — see `behavioral-research-report-pass4.md`)
+- **Division of labor is now evidence-based:** **ABM** produces the quantitative scaling charts (it's heterogeneous by construction); **LLM agents** are ONLY for the qualitative vignette. LLM agents are documented to be **overly agreeable** (over-give/over-praise) and **homogeneous** (variance 20–300× lower than humans), so **participation/inequality numbers must NEVER be read off LLM agents** (Wu et al. 2025; Larooij & Törnberg 2025; Park et al. 2023).
+- **ABM validity has hard limits:** equifinality means matching data ≠ correct mechanism (Windrum/Fagiolo/Moneta 2007); over-parameterized models can produce "any result" (JASSS 10/2/8). → **Keep it parsimonious; label every parameter's research provenance; run multiple seeds + sensitivity analysis; report how many parameters were tuned.**
+- **We have no real employee data pre-deployment** → we **cannot truly validate** (Zhang & Vorobeychik 2017). Honest stance: the ABM is a **literature-grounded *what-if*, not a validated predictor.** Calibration template if data later exists: Janssen/DeCaro/Lee (2022, NetLogo BehaviorSearch).
+- **Framing rule:** present all results as **directional hypotheses to A/B test in real deployment** — explicitly disclaim quantitative predictions of adoption rate, ROI, or specific inequality metrics (Wu et al. 2025). **Honesty about limits is the credibility signal**, not a weakness.
 
 ## Value to the hackathon
 - **Effectiveness:** design validated, not just asserted; scale claims (D21) get quantitative backing.
