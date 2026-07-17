@@ -69,11 +69,13 @@ model Boost {
 }
 
 model Reward {
-  id        String  @id @default(cuid())
-  name      String
-  cost      Int
-  imageUrl  String?
-  category  String
+  id          String  @id @default(cuid())
+  name        String
+  cost        Int
+  imageUrl    String?
+  category    String
+  description String?
+  emoji       String?
   redemptions Redemption[]
 }
 

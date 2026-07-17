@@ -1,4 +1,5 @@
 import { prisma } from "../src/client.js";
+import { REWARDS } from "./catalog.js";
 
 const VALUES = [
   { key: "friend", label: "Great Friend", emoji: "🤝", description: "Went out of their way to support a teammate." },
@@ -6,15 +7,6 @@ const VALUES = [
   { key: "crisis", label: "Crisis Crusher", emoji: "🚨", description: "Provided critical help during a crisis." },
   { key: "craft", label: "Craftsmanship", emoji: "🛠️", description: "Raised the bar on quality." },
   { key: "teamwork", label: "Teamwork", emoji: "🧩", description: "Made the whole team better." },
-];
-
-const REWARDS = [
-  { name: "Sticker Pack", cost: 20, category: "swag" },
-  { name: "Coffee Gift Card ($5)", cost: 50, category: "giftcard" },
-  { name: "Company T-Shirt", cost: 120, category: "swag" },
-  { name: "Hoodie", cost: 250, category: "swag" },
-  { name: "Lunch Gift Card ($25)", cost: 300, category: "giftcard" },
-  { name: "Extra Day Off", cost: 1000, category: "experience" },
 ];
 
 const USERS = ["Ada Lovelace", "Ben Carter", "Cy Nguyen", "Dana Ruiz", "Evan Park", "Farah Aziz"];

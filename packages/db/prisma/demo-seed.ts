@@ -4,6 +4,7 @@
 // regenerates, while preserving any real Slack-linked users.
 //   npm run db:demo
 import { prisma, giveKudos, addBoost, currentPeriod } from "../src/index.js";
+import { REWARDS as REWARD_DEFS } from "./catalog.js";
 
 const VALUE_DEFS = [
   { key: "friend", label: "Great Friend", emoji: "🤝", description: "Went out of their way to support a teammate." },
@@ -11,15 +12,6 @@ const VALUE_DEFS = [
   { key: "crisis", label: "Crisis Crusher", emoji: "🚨", description: "Provided critical help during a crisis." },
   { key: "craft", label: "Craftsmanship", emoji: "🛠️", description: "Raised the bar on quality." },
   { key: "teamwork", label: "Teamwork", emoji: "🧩", description: "Made the whole team better." },
-];
-
-const REWARD_DEFS = [
-  { name: "Sticker Pack", cost: 20, category: "swag" },
-  { name: "Coffee Gift Card ($5)", cost: 50, category: "giftcard" },
-  { name: "Company T-Shirt", cost: 120, category: "swag" },
-  { name: "Hoodie", cost: 250, category: "swag" },
-  { name: "Lunch Gift Card ($25)", cost: 300, category: "giftcard" },
-  { name: "Extra Day Off", cost: 1000, category: "experience" },
 ];
 
 const CAST = [
@@ -79,9 +71,12 @@ async function main() {
   let team = await prisma.team.findFirst();
   if (!team) team = await prisma.team.create({ data: { name: "Engineering" } });
 
-  // 3) Ensure values + rewards exist.
+  // 3) Ensure values + rewards exist. Rewards are fully resynced to the shared
+  //    catalog (redemptions were cleared in step 1, so this is FK-safe) — that
+  //    keeps a re-run's store in step with catalog.ts as the catalog evolves.
   for (const v of VALUE_DEFS) await prisma.value.upsert({ where: { key: v.key }, update: {}, create: v });
-  if ((await prisma.reward.count()) === 0) for (const r of REWARD_DEFS) await prisma.reward.create({ data: r });
+  await prisma.reward.deleteMany();
+  for (const r of REWARD_DEFS) await prisma.reward.create({ data: r });
 
   // 4) Ensure the demo cast (create missing by name; preserves real Slack-linked users).
   for (const name of CAST) {
@@ -147,6 +142,16 @@ async function main() {
       }
     }
   }
+
+  // 7) Guarantee a flattering spread for the rewards store, regardless of how
+  //    the random kudos landed: one teammate comfortably into the mid-tier and
+  //    one a hair short of the aspirational Extra Day Off (500 pts).
+  const setBalance = async (name: string, redeemableBalance: number) => {
+    const u = await prisma.user.findFirst({ where: { name } });
+    if (u) await prisma.user.update({ where: { id: u.id }, data: { redeemableBalance } });
+  };
+  await setBalance("Ada Lovelace", 320); // affords Team Lunch, Premium Parking, a Hoodie…
+  await setBalance("Ben Carter", 480); //  so close to the Extra Day Off — just save a bit more
 
   const { start } = currentPeriod();
   const thisMonth = await prisma.kudos.count({ where: { createdAt: { gte: start } } });
