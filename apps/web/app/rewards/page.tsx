@@ -30,7 +30,7 @@ export default async function RewardsPage() {
           <div key={r.id} className="rounded-xl bg-white p-4 shadow-sm">
             <p className="font-semibold">{r.name}</p>
             <p className="text-sm text-slate-500">{r.cost} pts · {r.category}</p>
-            <RedeemButton userId={user.id} rewardId={r.id} affordable={user.redeemableBalance >= r.cost} />
+            <RedeemButton rewardId={r.id} affordable={user.redeemableBalance >= r.cost} />
           </div>
         ))}
       </div>
