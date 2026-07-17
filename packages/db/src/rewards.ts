@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { prisma } from "./client.js";
 
 export class InsufficientBalanceError extends Error {
@@ -12,7 +13,7 @@ export async function redeemReward(input: { userId: string; rewardId: string }):
   await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const reward = await prisma.reward.findUniqueOrThrow({ where: { id: rewardId } });
 
-  const redemption = await prisma.$transaction(async (tx) => {
+  const redemption = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Conditional decrement: only debits when the balance still covers the
     // cost, so concurrent redeems can't drive redeemableBalance negative.
     const debited = await tx.user.updateMany({
@@ -25,4 +26,16 @@ export async function redeemReward(input: { userId: string; rewardId: string }):
     });
   });
   return { redemptionId: redemption.id };
+}
+
+/**
+ * A user's redemption history, newest first, with the redeemed reward joined in
+ * so the UI can show its emoji, name, and category without a second query.
+ */
+export async function listRedemptionsForUser(userId: string) {
+  return prisma.redemption.findMany({
+    where: { userId },
+    include: { reward: true },
+    orderBy: { createdAt: "desc" },
+  });
 }
