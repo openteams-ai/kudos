@@ -1,6 +1,7 @@
 import { prisma } from "@kudos/db";
 import { getCurrentUser } from "../../lib/current-user";
 import { RedeemButton } from "./redeem-button";
+import { PointsChip } from "../../components/ui/PointsChip";
 
 export const dynamic = "force-dynamic";
 
@@ -12,27 +13,47 @@ export default async function RewardsPage() {
 
   if (!user) {
     return (
-      <div className="rounded-xl bg-white p-6 text-center shadow-sm">
-        <p className="text-lg font-semibold">Sign in to redeem rewards</p>
-        <p className="mt-1 text-sm text-slate-500">Use “Sign in with Slack” in the top-right to see your balance and redeem.</p>
+      <div className="rounded-card border border-borderx bg-card p-8 text-center shadow-card">
+        <p className="font-display text-xl font-bold text-ink">Sign in to redeem rewards</p>
+        <p className="mt-2 text-ink/60">
+          Use “Sign in with Slack” in the top-right to see your balance and redeem.
+        </p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="rounded-xl bg-white p-4 shadow-sm">
-        <p className="text-sm text-slate-500">Redeeming as</p>
-        <p className="text-lg font-semibold">{user.name} · {user.redeemableBalance} pts</p>
+      <div className="flex items-center justify-between gap-4 rounded-card border border-borderx bg-card p-5 shadow-card">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">Redeeming as</p>
+          <p className="font-display text-lg font-bold text-ink">{user.name}</p>
+        </div>
+        <PointsChip points={user.redeemableBalance} />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        {rewards.map((r) => (
-          <div key={r.id} className="rounded-xl bg-white p-4 shadow-sm">
-            <p className="font-semibold">{r.name}</p>
-            <p className="text-sm text-slate-500">{r.cost} pts · {r.category}</p>
-            <RedeemButton rewardId={r.id} affordable={user.redeemableBalance >= r.cost} />
-          </div>
-        ))}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {rewards.map((r) => {
+          const affordable = user.redeemableBalance >= r.cost;
+          return (
+            <div
+              key={r.id}
+              className="flex flex-col rounded-card border border-borderx bg-card p-5 shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-cardHover"
+            >
+              <p className="font-display font-semibold text-ink">{r.name}</p>
+              <p className="mt-1 text-sm text-ink/50">{r.category}</p>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <PointsChip points={r.cost} />
+                {!affordable && (
+                  <span className="text-xs text-ink/40">
+                    {r.cost - user.redeemableBalance} more to go
+                  </span>
+                )}
+              </div>
+              <RedeemButton rewardId={r.id} affordable={affordable} />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

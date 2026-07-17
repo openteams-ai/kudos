@@ -21,12 +21,15 @@ export function RedeemButton({ rewardId, affordable }: { rewardId: string; affor
     }
   }
   return (
-    <div className="mt-2">
-      <button onClick={redeem} disabled={!affordable || pending}
-        className="rounded-lg bg-emerald-600 px-3 py-1 text-sm text-white disabled:bg-slate-300">
-        Redeem
+    <div className="mt-4">
+      <button
+        onClick={redeem}
+        disabled={!affordable || pending}
+        className="w-full rounded-pill bg-primary px-4 py-2 text-sm font-display font-semibold text-white shadow-card transition hover:bg-[#a012c0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:cursor-not-allowed disabled:bg-borderx disabled:text-ink/40 disabled:shadow-none"
+      >
+        {pending ? "Redeeming…" : "Redeem"}
       </button>
-      {msg && <p className="mt-1 text-xs text-slate-500">{msg}</p>}
+      {msg && <p className="mt-2 text-xs text-ink/50">{msg}</p>}
     </div>
   );
 }
