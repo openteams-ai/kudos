@@ -1,7 +1,8 @@
+import Link from "next/link";
 import { prisma } from "@kudos/db";
 import { getCurrentUser } from "../../lib/current-user";
-import { RedeemButton } from "./redeem-button";
 import { PointsChip } from "../../components/ui/PointsChip";
+import { RewardsStore, type StoreReward } from "./rewards-store";
 
 export const dynamic = "force-dynamic";
 
@@ -14,47 +15,46 @@ export default async function RewardsPage() {
   if (!user) {
     return (
       <div className="rounded-card border border-borderx bg-card p-8 text-center shadow-card">
-        <p className="font-display text-xl font-bold text-ink">Sign in to redeem rewards</p>
+        <p className="text-4xl" aria-hidden="true">
+          🎁
+        </p>
+        <p className="mt-3 font-display text-xl font-bold text-ink">Sign in to redeem rewards</p>
         <p className="mt-2 text-ink/60">
-          Use “Sign in with Slack” in the top-right to see your balance and redeem.
+          Use “Sign in with Slack” in the top-right to see your balance and turn your kudos into
+          rewards.
         </p>
       </div>
     );
   }
 
+  const storeRewards: StoreReward[] = rewards.map((r) => ({
+    id: r.id,
+    name: r.name,
+    cost: r.cost,
+    category: r.category,
+    description: r.description,
+    emoji: r.emoji,
+  }));
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4 rounded-card border border-borderx bg-card p-5 shadow-card">
+    <div className="space-y-8">
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-borderx bg-card p-5 shadow-card">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">Redeeming as</p>
           <p className="font-display text-lg font-bold text-ink">{user.name}</p>
         </div>
-        <PointsChip points={user.redeemableBalance} />
+        <div className="flex items-center gap-3">
+          <PointsChip points={user.redeemableBalance} />
+          <Link
+            href="/rewards/history"
+            className="rounded-pill border border-borderx bg-card px-4 py-1.5 text-sm font-display font-semibold text-ink/70 transition hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+          >
+            My Rewards
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {rewards.map((r) => {
-          const affordable = user.redeemableBalance >= r.cost;
-          return (
-            <div
-              key={r.id}
-              className="flex flex-col rounded-card border border-borderx bg-card p-5 shadow-card transition duration-200 hover:-translate-y-0.5 hover:shadow-cardHover"
-            >
-              <p className="font-display font-semibold text-ink">{r.name}</p>
-              <p className="mt-1 text-sm text-ink/50">{r.category}</p>
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <PointsChip points={r.cost} />
-                {!affordable && (
-                  <span className="text-xs text-ink/40">
-                    {r.cost - user.redeemableBalance} more to go
-                  </span>
-                )}
-              </div>
-              <RedeemButton rewardId={r.id} affordable={affordable} />
-            </div>
-          );
-        })}
-      </div>
+      <RewardsStore rewards={storeRewards} startingBalance={user.redeemableBalance} />
     </div>
   );
 }
