@@ -8,7 +8,8 @@ export default {
     extend: {
       colors: {
         primary: "#BA18DA", // purple — buttons, links, badges
-        teal: "#20AAA1", // points / success
+        teal: "#20AAA1", // points / success (fills + accents where text is white)
+        "teal-ink": "#0F7A72", // darker teal for text on light backgrounds (AA)
         gold: "#EAB54E", // celebration / boosts
         ink: "#0F1015", // primary text
         canvas: "#FBF7FB", // warm lilac-white page background

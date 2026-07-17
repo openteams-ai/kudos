@@ -83,11 +83,11 @@ export default async function RewardsHistoryPage() {
                 <p className="truncate font-display font-semibold text-ink">
                   {redemption.reward.name}
                 </p>
-                <p className="text-sm text-ink/50">{dateFmt.format(redemption.createdAt)}</p>
+                <p className="text-sm text-ink/60">{dateFmt.format(redemption.createdAt)}</p>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <PointsChip points={redemption.cost} />
-                <span className="inline-flex items-center rounded-pill bg-teal/12 px-2.5 py-0.5 text-xs font-display font-semibold text-teal">
+                <span className="inline-flex items-center rounded-pill bg-teal/12 px-2.5 py-0.5 text-xs font-display font-semibold text-teal-ink">
                   Requested ✓
                 </span>
               </div>
@@ -97,7 +97,7 @@ export default async function RewardsHistoryPage() {
       )}
 
       {redemptions.length > 0 && (
-        <p className="text-center text-xs text-ink/50">
+        <p className="text-center text-xs text-ink/60">
           “Requested” means your team has the request and will get it fulfilled. 🎉
         </p>
       )}

@@ -38,9 +38,10 @@ export default async function RewardsPage() {
 
   return (
     <div className="space-y-8">
+      <h1 className="sr-only">Rewards store</h1>
       <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border border-borderx bg-card p-5 shadow-card">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">Redeeming as</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink/60">Redeeming as</p>
           <p className="font-display text-lg font-bold text-ink">{user.name}</p>
         </div>
         <div className="flex items-center gap-3">

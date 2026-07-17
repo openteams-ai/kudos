@@ -36,6 +36,8 @@ export async function listRedemptionsForUser(userId: string) {
   return prisma.redemption.findMany({
     where: { userId },
     include: { reward: true },
-    orderBy: { createdAt: "desc" },
+    // id (a monotonic cuid) breaks ties so same-millisecond redemptions still
+    // sort deterministically newest-first.
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
 }

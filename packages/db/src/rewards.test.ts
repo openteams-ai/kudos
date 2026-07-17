@@ -82,8 +82,6 @@ describe("listRedemptionsForUser", () => {
     const hoodie = await prisma.reward.create({ data: { name: "Hoodie", cost: 200, category: "Company Swag", emoji: "🧥" } });
 
     await redeemReward({ userId: user.id, rewardId: sticker.id });
-    // Nudge the clock so the second redemption sorts strictly newer than the first.
-    await new Promise((r) => setTimeout(r, 5));
     await redeemReward({ userId: user.id, rewardId: hoodie.id });
 
     const history = await listRedemptionsForUser(user.id);

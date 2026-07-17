@@ -17,8 +17,8 @@ export type StoreReward = {
 
 const FEATURED_NAMES = ["Extra Day Off", "Cozy Hoodie", "Donate $10 to Charity", "Coffee House $25"];
 
-type Tab = "All" | (typeof CATEGORY_ORDER)[number];
-const TABS: Tab[] = ["All", ...CATEGORY_ORDER];
+type Filter = "All" | (typeof CATEGORY_ORDER)[number];
+const FILTERS: Filter[] = ["All", ...CATEGORY_ORDER];
 
 export function RewardsStore({
   rewards,
@@ -29,15 +29,22 @@ export function RewardsStore({
 }) {
   const router = useRouter();
   const [balance, setBalance] = useState(startingBalance);
-  const [tab, setTab] = useState<Tab>("All");
+  const [filter, setFilter] = useState<Filter>("All");
   const [dialog, setDialog] = useState<StoreReward | null>(null);
   const [redeemedIds, setRedeemedIds] = useState<Set<string>>(new Set());
   const [confettiN, setConfettiN] = useState(0);
+  // The most recently redeemed reward gets keyboard focus once its card
+  // re-renders into the "Requested" state, so focus is never lost to <body>.
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [announcement, setAnnouncement] = useState("");
 
   function handleRedeemed(reward: StoreReward) {
-    setBalance((b) => b - reward.cost);
+    const newBalance = balance - reward.cost;
+    setBalance(newBalance);
     setRedeemedIds((prev) => new Set(prev).add(reward.id));
     setConfettiN((n) => n + 1);
+    setFocusId(reward.id);
+    setAnnouncement(`Requested! ${reward.name}. New balance ${newBalance} pts.`);
     setDialog(null);
     // Reconcile with server truth (balance lives on the User row).
     router.refresh();
@@ -50,20 +57,24 @@ export function RewardsStore({
   // The save-up spotlight: the unaffordable reward the user is closest to earning.
   const spotlight = rewards
     .filter((r) => r.cost > balance)
-    .sort((a, b) => a.cost - balance - (b.cost - balance))[0];
+    .sort((a, b) => a.cost - b.cost)[0];
 
-  const visible = tab === "All" ? rewards : rewards.filter((r) => r.category === tab);
-  const note = tab !== "All" ? CATEGORY_STYLES[tab]?.note : undefined;
+  const visible = filter === "All" ? rewards : rewards.filter((r) => r.category === filter);
+  const note = filter !== "All" ? CATEGORY_STYLES[filter]?.note : undefined;
 
   return (
     <div className="space-y-8">
       {confettiN > 0 && <Confetti key={confettiN} fire />}
 
-      {spotlight && (
-        <SaveUpSpotlight reward={spotlight} balance={balance} />
-      )}
+      {/* Polite live region: announces the redeem outcome and the new balance,
+          which is otherwise conveyed only through confetti (aria-hidden). */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
 
-      {tab === "All" && featured.length > 0 && (
+      {spotlight && <SaveUpSpotlight reward={spotlight} balance={balance} />}
+
+      {filter === "All" && featured.length > 0 && (
         <section aria-labelledby="featured-heading" className="space-y-3">
           <h2 id="featured-heading" className="font-display text-lg font-bold text-ink">
             Crowd favorites
@@ -75,6 +86,8 @@ export function RewardsStore({
                 reward={r}
                 balance={balance}
                 redeemed={redeemedIds.has(r.id)}
+                focus={focusId === r.id}
+                onFocused={() => setFocusId(null)}
                 onRedeem={() => setDialog(r)}
               />
             ))}
@@ -86,15 +99,15 @@ export function RewardsStore({
         <h2 id="catalog-heading" className="sr-only">
           Rewards catalog
         </h2>
-        <div role="tablist" aria-label="Filter rewards by category" className="flex flex-wrap gap-2">
-          {TABS.map((t) => {
-            const active = t === tab;
+        <div role="group" aria-label="Filter rewards by category" className="flex flex-wrap gap-2">
+          {FILTERS.map((f) => {
+            const active = f === filter;
             return (
               <button
-                key={t}
-                role="tab"
-                aria-selected={active}
-                onClick={() => setTab(t)}
+                key={f}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setFilter(f)}
                 className={
                   "rounded-pill px-4 py-1.5 text-sm font-display font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas " +
                   (active
@@ -102,7 +115,7 @@ export function RewardsStore({
                     : "border border-borderx bg-card text-ink/70 hover:border-primary hover:text-primary")
                 }
               >
-                {t}
+                {f}
               </button>
             );
           })}
@@ -115,13 +128,15 @@ export function RewardsStore({
           </p>
         )}
 
-        <div role="tabpanel" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {visible.map((r) => (
             <RewardCard
               key={r.id}
               reward={r}
               balance={balance}
               redeemed={redeemedIds.has(r.id)}
+              focus={focusId === r.id}
+              onFocused={() => setFocusId(null)}
               onRedeem={() => setDialog(r)}
             />
           ))}
@@ -146,15 +161,61 @@ function Emoji({ value, className }: { value: string | null; className?: string 
   );
 }
 
+/**
+ * The "Requested" state that replaces a Redeem button after a successful
+ * redeem. Focusable (tabIndex -1) and labeled so the dialog's closing
+ * focus-restore lands here instead of falling to <body>. Only the first card
+ * for a given reward (featured renders before the grid) claims focus.
+ */
+function RequestedTag({
+  name,
+  focus,
+  onFocused,
+}: {
+  name: string;
+  focus: boolean;
+  onFocused: () => void;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (focus) {
+      ref.current?.focus();
+      onFocused();
+    }
+  }, [focus, onFocused]);
+  return (
+    <span
+      ref={ref}
+      tabIndex={-1}
+      aria-label={`Requested: ${name}`}
+      className="rounded text-sm font-display font-semibold text-teal-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+    >
+      Requested ✓
+    </span>
+  );
+}
+
+function MorePtsHint({ gap }: { gap: number }) {
+  return (
+    <span className="rounded-pill bg-borderx px-3 py-1.5 text-xs font-display font-semibold text-ink/70">
+      {gap} more pts
+    </span>
+  );
+}
+
 function RewardCard({
   reward,
   balance,
   redeemed,
+  focus,
+  onFocused,
   onRedeem,
 }: {
   reward: StoreReward;
   balance: number;
   redeemed: boolean;
+  focus: boolean;
+  onFocused: () => void;
   onRedeem: () => void;
 }) {
   const affordable = balance >= reward.cost;
@@ -178,18 +239,17 @@ function RewardCard({
       <div className="mt-3 flex items-center justify-between gap-3 pt-1">
         <PointsChip points={reward.cost} />
         {redeemed ? (
-          <span className="text-sm font-display font-semibold text-teal">Requested ✓</span>
+          <RequestedTag name={reward.name} focus={focus} onFocused={onFocused} />
         ) : affordable ? (
           <button
             onClick={onRedeem}
+            aria-label={`Redeem ${reward.name}`}
             className="rounded-pill bg-primary px-4 py-1.5 text-sm font-display font-semibold text-white shadow-card transition hover:bg-[#a012c0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
           >
             Redeem
           </button>
         ) : (
-          <span className="rounded-pill bg-borderx px-3 py-1.5 text-xs font-display font-semibold text-ink/50">
-            {gap} more pts
-          </span>
+          <MorePtsHint gap={gap} />
         )}
       </div>
     </div>
@@ -200,11 +260,15 @@ function FeaturedCard({
   reward,
   balance,
   redeemed,
+  focus,
+  onFocused,
   onRedeem,
 }: {
   reward: StoreReward;
   balance: number;
   redeemed: boolean;
+  focus: boolean;
+  onFocused: () => void;
   onRedeem: () => void;
 }) {
   const affordable = balance >= reward.cost;
@@ -222,25 +286,24 @@ function FeaturedCard({
         <Emoji value={reward.emoji} className="text-4xl" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col">
-        <span className="inline-flex w-fit items-center gap-1 rounded-pill bg-gold/20 px-2 py-0.5 text-[11px] font-display font-semibold text-[#8a6d1f]">
+        <span className="inline-flex w-fit items-center gap-1 rounded-pill bg-gold/20 px-2 py-0.5 text-[11px] font-display font-semibold text-[#7A5F16]">
           ★ Crowd favorite
         </span>
         <p className="mt-1 truncate font-display font-semibold text-ink">{reward.name}</p>
         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
           <PointsChip points={reward.cost} />
           {redeemed ? (
-            <span className="text-sm font-display font-semibold text-teal">Requested ✓</span>
+            <RequestedTag name={reward.name} focus={focus} onFocused={onFocused} />
           ) : affordable ? (
             <button
               onClick={onRedeem}
+              aria-label={`Redeem ${reward.name}`}
               className="rounded-pill bg-primary px-4 py-1.5 text-sm font-display font-semibold text-white shadow-card transition hover:bg-[#a012c0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
             >
               Redeem
             </button>
           ) : (
-            <span className="rounded-pill bg-borderx px-3 py-1.5 text-xs font-display font-semibold text-ink/50">
-              {gap} more pts
-            </span>
+            <MorePtsHint gap={gap} />
           )}
         </div>
       </div>
@@ -265,7 +328,7 @@ function SaveUpSpotlight({ reward, balance }: { reward: StoreReward; balance: nu
           <Emoji value={reward.emoji} className="text-3xl" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink/60">
             {almost ? "Almost there" : "Saving toward"}
           </p>
           <p className="font-display font-bold text-ink">{reward.name}</p>
@@ -316,10 +379,19 @@ function ConfirmDialog({
     if (reward && !el.open) {
       setError(null);
       el.showModal();
+      // showModal makes the background inert but does not stop it scrolling.
+      document.body.style.overflow = "hidden";
     } else if (!reward && el.open) {
       el.close();
     }
   }, [reward]);
+
+  // Failsafe: never leave the body scroll-locked if this unmounts while open.
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   async function confirm() {
     if (!reward) return;
@@ -340,7 +412,9 @@ function ConfirmDialog({
       setError(
         res.status === 409
           ? "You don't have quite enough points for this yet."
-          : "Something went wrong redeeming this. Please try again.",
+          : res.status === 401
+            ? "Your session expired — please sign in again."
+            : "Something went wrong redeeming this. Please try again.",
       );
     } catch {
       setError("Something went wrong redeeming this. Please try again.");
@@ -355,7 +429,10 @@ function ConfirmDialog({
     <dialog
       ref={ref}
       aria-labelledby="redeem-dialog-title"
-      onClose={onClose}
+      onClose={() => {
+        document.body.style.overflow = "";
+        onClose();
+      }}
       onClick={(e) => {
         // Backdrop click (target is the dialog element itself) dismisses.
         if (e.target === ref.current) onClose();

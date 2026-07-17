@@ -8,7 +8,7 @@ export function PointsChip({
 }) {
   const sign = showSign && points > 0 ? "+" : "";
   return (
-    <span className="inline-flex items-center rounded-pill bg-teal/12 px-2.5 py-1 text-xs font-display font-semibold text-teal">
+    <span className="inline-flex items-center rounded-pill bg-teal/12 px-2.5 py-1 text-xs font-display font-semibold text-teal-ink">
       {sign}
       {points} pts
     </span>
