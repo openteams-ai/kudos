@@ -1,0 +1,124 @@
+name: docker
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  WEB_IMAGE: ghcr.io/brandonrc/kudos-bounty-web
+  SLACK_IMAGE: ghcr.io/brandonrc/kudos-bounty-slack
+
+jobs:
+  images:
+    name: build & push images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Push on branch/tag pushes; PRs build for validation only (no login).
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ---- web (default: SQLite Prisma client) ------------------------------
+      - name: Docker metadata (web)
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.WEB_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build & push web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: web
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+      # ---- slack bot --------------------------------------------------------
+      - name: Docker metadata (slack)
+        id: meta-slack
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.SLACK_IMAGE }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build & push slack
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: slack
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-slack.outputs.tags }}
+          labels: ${{ steps.meta-slack.outputs.labels }}
+          cache-from: type=gha,scope=slack
+          cache-to: type=gha,mode=max,scope=slack
+
+      # ---- web (PostgreSQL Prisma client variant) ---------------------------
+      # Same web target built with --build-arg DB_PROVIDER=postgres, published as
+      # `-pg`-suffixed tags on the web image (e.g. :latest-pg). Kept pushed so the
+      # Postgres deployment story is pull-ready without a local build; the extra
+      # build is cheap thanks to the shared gha layer cache.
+      - name: Docker metadata (web-pg)
+        id: meta-web-pg
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.WEB_IMAGE }}
+          flavor: |
+            suffix=-pg,onlatest=true
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build & push web-pg
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: web
+          build-args: |
+            DB_PROVIDER=postgres
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta-web-pg.outputs.tags }}
+          labels: ${{ steps.meta-web-pg.outputs.labels }}
+          cache-from: type=gha,scope=web-pg
+          cache-to: type=gha,mode=max,scope=web-pg
+
+      # Enabling arm64 later: add `linux/arm64` to the `platforms` lists above
+      # and insert a `docker/setup-qemu-action@v3` step before setup-buildx.
+      # Caveat: arm64 builds run under QEMU emulation on GitHub's amd64 runners
+      # and are typically 3-5x slower (more CI minutes). If build time matters,
+      # use native arm64 runners instead of emulation.

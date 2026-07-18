@@ -43,6 +43,52 @@ docker build --target slack -t kudos:slack .
 docker build --target web --build-arg DB_PROVIDER=postgres -t kudos:web .
 ```
 
+## Run from prebuilt images (no local build)
+
+Every push to `main` publishes images to GitHub Container Registry via
+[`.github/workflows/docker.yml`](../.github/workflows/docker.yml), so you can run
+Kudos without building anything:
+
+| Image                                     | Tags                                  |
+| ----------------------------------------- | ------------------------------------- |
+| `ghcr.io/brandonrc/kudos-bounty-web`      | `latest`, `sha-<commit>` (+ `vX.Y.Z` on tags) |
+| `ghcr.io/brandonrc/kudos-bounty-slack`    | `latest`, `sha-<commit>` (+ `vX.Y.Z` on tags) |
+| `ghcr.io/brandonrc/kudos-bounty-web:latest-pg` | Postgres-client build of the web image  |
+
+```bash
+docker pull ghcr.io/brandonrc/kudos-bounty-web:latest
+docker pull ghcr.io/brandonrc/kudos-bounty-slack:latest
+```
+
+> **Visibility:** the packages are private until the repo owner sets them public
+> (GitHub → the repo's **Packages** → package → **Package settings** → **Change
+> visibility → Public**). While private, authenticate first with a token that has
+> `read:packages`: `docker login ghcr.io -u <user>`.
+
+The easiest way to run them is the prebuilt compose file
+[`docker-compose.ghcr.yml`](../docker-compose.ghcr.yml) — same env file and shared
+SQLite volume as the build-from-source flow, but it pulls images instead:
+
+```bash
+cp apps/web/.env.local.example .env.docker    # then fill in values
+
+# One-shot db init (SQLite on a named volume, shared by web + slack):
+docker compose -f docker-compose.ghcr.yml run --rm web npm run db:push
+docker compose -f docker-compose.ghcr.yml run --rm web npm run db:seed
+
+docker compose -f docker-compose.ghcr.yml up   # web -> http://localhost:3000
+```
+
+Pin a specific commit instead of `latest` by setting the tag overrides:
+
+```bash
+WEB_TAG=sha-<commit> SLACK_TAG=sha-<commit> \
+  docker compose -f docker-compose.ghcr.yml up
+```
+
+For Postgres, set `WEB_TAG=latest-pg` and follow the profile steps in the file's
+comments (uses `db:pg:migrate`, not `db:push`).
+
 ## Database modes
 
 The `DATABASE_URL` env var selects the backend. All three modes are honored by

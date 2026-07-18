@@ -1,5 +1,8 @@
 # Kudos — a recognition-first, genuinely rewarding peer appreciation program
 
+[![CI](https://github.com/brandonrc/kudos-bounty/actions/workflows/ci.yml/badge.svg)](https://github.com/brandonrc/kudos-bounty/actions/workflows/ci.yml)
+[![Docker](https://github.com/brandonrc/kudos-bounty/actions/workflows/docker.yml/badge.svg)](https://github.com/brandonrc/kudos-bounty/actions/workflows/docker.yml)
+
 > **Bounty Hunters — Kudos Program** hackathon entry (Engineering Division, June 30 – July 20, 2026).
 
 Give a teammate real recognition in Slack in about ten seconds — `/kudos`, pick a person, a value, and a reason — and watch it land in a live web feed. Points accrue toward rewards people actually want, and the whole thing is built as a **behavioral nudge**: recognition happens where work already happens, giving is deliberately scarce so it stays thoughtful, and there's no leaderboard to game. Inspired by Nectar / Bonusly and grounded in behavioral-science research (see [`docs/research/`](docs/research/README.md)).
@@ -75,6 +78,19 @@ npm test             # 22 Vitest tests in packages/db
 ```
 
 The dashboard works on its own with seeded/demo data. The Slack bot is what makes giving live — set it up next.
+
+### Run with Docker (prebuilt images)
+
+No local Node toolchain needed — pull the images CI publishes to GHCR and run them:
+
+```bash
+cp apps/web/.env.local.example .env.docker    # then fill in values
+docker compose -f docker-compose.ghcr.yml run --rm web npm run db:push
+docker compose -f docker-compose.ghcr.yml run --rm web npm run db:seed
+docker compose -f docker-compose.ghcr.yml up  # http://localhost:3000
+```
+
+Or build locally with `docker compose up`. Full details — image tags, PostgreSQL, and troubleshooting — are in **[`docs/docker.md`](docs/docker.md)**.
 
 ### Connecting Slack
 

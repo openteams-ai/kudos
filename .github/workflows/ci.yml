@@ -1,0 +1,64 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref for fast feedback.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test + schema drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc # Node 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      # Tests talk to SQLite directly (deleteMany/create) and dev.db is not
+      # committed, so the schema must be created before the suite runs.
+      - name: Create SQLite schema
+        run: npm run db:push
+
+      - name: Unit tests
+        run: npm test
+
+      # Fails if prisma/schema.postgres.prisma has drifted from schema.prisma.
+      - name: Postgres schema drift gate
+        run: npm run db:pg:schema:check
+
+  build:
+    name: web build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc # Node 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      # All DB-backed pages are force-dynamic, so the build needs the generated
+      # client but no live database.
+      - name: Build web (Next.js)
+        run: npm -w @kudos/web run build
