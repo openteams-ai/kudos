@@ -4,7 +4,7 @@
 // auth.test. It reports the workspace + bot name on success and NEVER returns
 // or logs the token itself.
 
-import { isSetupPageEnabled } from "./setup-enabled";
+import { checkSetupAccess } from "./setup-enabled";
 
 export type SlackTestResult =
   | { ok: true; team: string; botUser: string; url?: string }
@@ -58,7 +58,7 @@ export async function slackTestAction(
 ): Promise<SlackTestResult> {
   // Server actions are reachable directly, so re-check the gate here rather
   // than relying on the page being hidden.
-  if (!(await isSetupPageEnabled())) {
+  if (!(await checkSetupAccess()).allowed) {
     return { ok: false, error: "Setup diagnostics are disabled on this server." };
   }
 

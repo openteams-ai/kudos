@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getDatabaseStatus, getEnvStatus } from "../../lib/diagnostics";
-import { isSetupPageEnabled } from "./setup-enabled";
+import { checkSetupAccess } from "./setup-enabled";
 import { CheckList, CheckRow, Code, type CheckItem } from "./check-ui";
 import { SlackTestButton } from "./slack-test-button";
 
@@ -24,9 +24,10 @@ function Ext({ href, children }: { href: string; children: ReactNode }) {
 }
 
 export default async function SetupPage() {
-  // Unlisted + access-gated. Dev: always. Prod: an admin session or the
-  // ENABLE_SETUP_PAGE bootstrap flag; otherwise 404 (never reveal it exists).
-  if (!(await isSetupPageEnabled())) notFound();
+  // Unlisted + self-locking. Dev: always. Prod: open only until the first admin
+  // exists (first-run), then locked to a signed-in admin; otherwise 404.
+  const access = await checkSetupAccess();
+  if (!access.allowed) notFound();
 
   const [db, env] = await Promise.all([getDatabaseStatus(), Promise.resolve(getEnvStatus())]);
 
@@ -221,6 +222,19 @@ export default async function SetupPage() {
           environment and reports back.
         </p>
       </header>
+
+      {access.firstRun ? (
+        <div role="note" className="rounded-card border border-gold/40 bg-gold/15 px-5 py-4">
+          <p className="font-display text-sm font-semibold text-ink">
+            This page is open because no admin user exists yet.
+          </p>
+          <p className="mt-1 text-sm text-ink/80">
+            Sign in and grant yourself admin to lock it — after that, only signed-in admins can
+            reach this page:{" "}
+            <Code>update User set isAdmin=1 where email=&apos;you@co.com&apos;;</Code>
+          </p>
+        </div>
+      ) : null}
 
       <CheckList title="Database">
         {dbChecks.map((c, i) => (
