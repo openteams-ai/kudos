@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { redeemReward, InsufficientBalanceError } from "@kudos/db";
+import { prisma, redeemReward, InsufficientBalanceError } from "@kudos/db";
 import { getCurrentUser } from "../../../lib/current-user";
+import { celebrateRedemption } from "../../../lib/slack-celebrate";
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -21,6 +22,21 @@ export async function POST(req: Request) {
 
   try {
     const { redemptionId } = await redeemReward({ userId: user.id, rewardId });
+    // Fire-and-forget Slack celebration — must never affect the API response.
+    void prisma.reward
+      .findUnique({ where: { id: rewardId } })
+      .then((reward) => {
+        if (reward) {
+          celebrateRedemption({
+            userName: user.name,
+            slackUserId: user.slackUserId,
+            rewardName: reward.name,
+            rewardEmoji: reward.emoji,
+            cost: reward.cost,
+          });
+        }
+      })
+      .catch((e) => console.error("slack celebration lookup failed:", e));
     return NextResponse.json({ ok: true, redemptionId });
   } catch (e) {
     if (e instanceof InsufficientBalanceError) {

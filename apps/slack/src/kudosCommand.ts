@@ -1,5 +1,5 @@
 import type { App } from "@slack/bolt";
-import { prisma, giveKudos } from "@kudos/db";
+import { prisma, giveKudos, remainingAllowance } from "@kudos/db";
 import { resolveUser } from "./userSync.js";
 
 const CHANNEL = process.env.SLACK_KUDOS_CHANNEL || "#kudos";
@@ -60,6 +60,21 @@ export function registerKudosCommand(app: App) {
       if (posted.ts) await prisma.kudos.update({ where: { id: kudosId }, data: { slackMessageTs: posted.ts } });
     } catch (e) {
       console.error("kudos post-ack failure:", e);
+    }
+
+    // Private allowance feedback for the giver; the kudos already succeeded,
+    // so failures here are logged and never surfaced.
+    try {
+      const left = await remainingAllowance(from.id);
+      const text = `✅ +10 pts to <@${toSlackId}> — you have ${left} pts left to give this month.`;
+      try {
+        await client.chat.postEphemeral({ channel: CHANNEL, user: body.user.id, text });
+      } catch {
+        // e.g. giver not in the kudos channel — DM them instead
+        await client.chat.postMessage({ channel: body.user.id, text });
+      }
+    } catch (e) {
+      console.error("allowance feedback failure:", e);
     }
   });
 }
