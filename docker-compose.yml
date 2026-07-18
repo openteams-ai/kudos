@@ -1,0 +1,66 @@
+# Kudos — web dashboard + Slack bot, one image, two services.
+#
+# Quick start:
+#   1. cp apps/web/.env.local.example .env.docker   # then fill in values
+#   2. docker compose build
+#   3. docker compose run --rm web npm run db:push   # create tables
+#      docker compose run --rm web npm run db:seed   # seed values + rewards
+#   4. docker compose up
+#
+# See docs/docker.md for env details, DB modes, and troubleshooting.
+
+services:
+  web:
+    build:
+      context: .
+      target: web
+    # Provide your own values here. This file is NOT committed — see
+    # apps/web/.env.local.example for the full list of keys. Marked optional so
+    # `docker compose config`/`up` still work before you create it.
+    env_file:
+      - path: .env.docker
+        required: false
+    ports:
+      - "3000:3000"
+    volumes:
+      # Named volume holds the SQLite db so it survives restarts and is shared
+      # with the slack service. Mounted at the Prisma dir because the default
+      # (DATABASE_URL unset) resolves to packages/db/prisma/dev.db.
+      - kudos-db:/app/packages/db/prisma
+    restart: unless-stopped
+
+  slack:
+    build:
+      context: .
+      target: slack
+    env_file:
+      - path: .env.docker
+        required: false
+    volumes:
+      # Same volume as web -> both containers see the same dev.db file.
+      - kudos-db:/app/packages/db/prisma
+    restart: unless-stopped
+
+  # Optional PostgreSQL backend. Enable with:  docker compose --profile postgres up
+  # Then point the app at it by setting in .env.docker:
+  #   DATABASE_URL=postgresql://kudos:kudos@db:5432/kudos?schema=public
+  # (Run db:push + db:seed against the new database after switching.)
+  db:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: kudos
+      POSTGRES_PASSWORD: kudos
+      POSTGRES_DB: kudos
+    volumes:
+      - kudos-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kudos -d kudos"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  kudos-db:
+  kudos-pg:

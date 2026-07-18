@@ -1,0 +1,50 @@
+# Dependencies (reinstalled from lockfile inside the image)
+node_modules
+**/node_modules
+
+# Build output (regenerated inside the image)
+.next
+**/.next
+out
+**/out
+dist
+**/dist
+build
+**/build
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Local SQLite databases — the container gets a fresh, seeded db on a volume
+*.db
+*.sqlite
+*.sqlite3
+**/*.db
+**/prisma/dev.db*
+
+# Secrets / env — never bake these into an image
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# Docs and repo meta not needed at build time
+docs
+README.md
+.git
+.gitignore
+.github
+
+# OS / editor cruft
+.DS_Store
+.idea
+.vscode
+*.swp
+
+# Test / coverage
+coverage
+.nyc_output
+
+# Docker artifacts themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
