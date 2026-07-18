@@ -6,6 +6,11 @@ import {
   listAllRedemptions,
   fulfillRedemption,
   adminStats,
+  createReward,
+  updateReward,
+  deleteReward,
+  RewardValidationError,
+  RewardInUseError,
 } from "./rewards.js";
 import { currentPeriod } from "./period.js";
 
@@ -208,5 +213,89 @@ describe("adminStats", () => {
       pointsAwardedThisMonth: 21,
       pendingRedemptions: 1,
     });
+  });
+});
+
+describe("createReward", () => {
+  beforeEach(reset);
+  afterAll(reset);
+
+  it("creates a reward with trimmed fields and blank optionals stored as null", async () => {
+    const reward = await createReward({
+      name: "  Cold Brew Kit  ",
+      cost: 90,
+      category: " Company Swag ",
+      emoji: "",
+      description: "  Brew at your desk.  ",
+    });
+
+    expect(reward.name).toBe("Cold Brew Kit");
+    expect(reward.category).toBe("Company Swag");
+    expect(reward.emoji).toBeNull();
+    expect(reward.description).toBe("Brew at your desk.");
+    expect(await prisma.reward.count()).toBe(1);
+  });
+
+  it("rejects a blank name and a non-positive or fractional cost", async () => {
+    const base = { name: "Mug", cost: 50, category: "Company Swag" };
+    await expect(createReward({ ...base, name: "  " })).rejects.toThrow(RewardValidationError);
+    await expect(createReward({ ...base, cost: 0 })).rejects.toThrow(RewardValidationError);
+    await expect(createReward({ ...base, cost: -10 })).rejects.toThrow(RewardValidationError);
+    await expect(createReward({ ...base, cost: 12.5 })).rejects.toThrow(RewardValidationError);
+    await expect(createReward({ ...base, category: "" })).rejects.toThrow(RewardValidationError);
+    expect(await prisma.reward.count()).toBe(0);
+  });
+});
+
+describe("updateReward", () => {
+  beforeEach(reset);
+  afterAll(reset);
+
+  it("updates only the provided fields", async () => {
+    const reward = await prisma.reward.create({
+      data: { name: "Hoodie", cost: 280, category: "Company Swag", emoji: "🧥", description: "Soft." },
+    });
+
+    const updated = await updateReward(reward.id, { cost: 240 });
+
+    expect(updated.cost).toBe(240);
+    expect(updated.name).toBe("Hoodie");
+    expect(updated.emoji).toBe("🧥");
+  });
+
+  it("rejects invalid patches without touching the row", async () => {
+    const reward = await prisma.reward.create({ data: { name: "Hoodie", cost: 280, category: "Company Swag" } });
+
+    await expect(updateReward(reward.id, { cost: 0 })).rejects.toThrow(RewardValidationError);
+    await expect(updateReward(reward.id, { name: "   " })).rejects.toThrow(RewardValidationError);
+
+    const after = await prisma.reward.findUnique({ where: { id: reward.id } });
+    expect(after?.cost).toBe(280);
+    expect(after?.name).toBe("Hoodie");
+  });
+
+  it("throws for an unknown reward id", async () => {
+    await expect(updateReward("nope", { cost: 100 })).rejects.toThrow();
+  });
+});
+
+describe("deleteReward", () => {
+  beforeEach(reset);
+  afterAll(reset);
+
+  it("deletes a reward nothing references", async () => {
+    const reward = await prisma.reward.create({ data: { name: "Mug", cost: 50, category: "Company Swag" } });
+    await deleteReward(reward.id);
+    expect(await prisma.reward.count()).toBe(0);
+  });
+
+  it("refuses to delete a reward with redemption history", async () => {
+    const team = await prisma.team.create({ data: { name: "Eng" } });
+    const user = await prisma.user.create({ data: { name: "Ada", teamId: team.id, redeemableBalance: 100 } });
+    const reward = await prisma.reward.create({ data: { name: "Mug", cost: 50, category: "Company Swag" } });
+    await redeemReward({ userId: user.id, rewardId: reward.id });
+
+    await expect(deleteReward(reward.id)).rejects.toThrow(RewardInUseError);
+    expect(await prisma.reward.count()).toBe(1);
   });
 });

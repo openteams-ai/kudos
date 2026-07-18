@@ -1,13 +1,15 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { adminStats, listAllRedemptions } from "@kudos/db";
+import { prisma, adminStats, listAllRedemptions } from "@kudos/db";
 import { getCurrentUser } from "../../lib/current-user";
 import { Avatar } from "../../components/ui/Avatar";
 import { PointsChip } from "../../components/ui/PointsChip";
 import { Button } from "../../components/ui/Button";
 import { fulfillRedemptionAction } from "./actions";
+import { Catalog } from "./catalog";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Admin · Kudos", description: "Program stats & redemption queue" };
+export const metadata = { title: "Admin · Kudos", description: "Program stats, redemption queue & catalog" };
 
 const dateFmt = new Intl.DateTimeFormat("en-US", {
   month: "short",
@@ -40,13 +42,29 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams?: { error?: string };
+}) {
   // Unlisted + admin-only in every environment; 404 so the page's existence
   // isn't revealed to non-admins (same posture as /setup).
   const user = await getCurrentUser();
   if (user?.isAdmin !== true) notFound();
 
-  const [stats, redemptions] = await Promise.all([adminStats(), listAllRedemptions()]);
+  const [stats, redemptions, rewards] = await Promise.all([
+    adminStats(),
+    listAllRedemptions(),
+    prisma.reward.findMany({ orderBy: [{ cost: "asc" }, { id: "asc" }] }),
+  ]);
+
+  // Per-reward redemption counts drive the "can't delete, has history" state.
+  const redemptionCounts = new Map<string, number>();
+  for (const r of redemptions) {
+    redemptionCounts.set(r.rewardId, (redemptionCounts.get(r.rewardId) ?? 0) + 1);
+  }
+
+  const error = searchParams?.error;
 
   return (
     <div className="space-y-8">
@@ -56,6 +74,21 @@ export default async function AdminPage() {
           What’s happening in the kudos program this month.
         </p>
       </div>
+
+      {error && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-[#F3C9C9] bg-[#FBEAEA] px-4 py-3 text-sm font-semibold text-[#8C1D1D]"
+        >
+          <span>{error}</span>
+          <Link
+            href="/admin"
+            className="rounded-pill px-2 py-0.5 font-display underline decoration-[#8C1D1D]/40 underline-offset-2 hover:decoration-[#8C1D1D] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+          >
+            Dismiss
+          </Link>
+        </div>
+      )}
 
       <section aria-labelledby="admin-stats-heading">
         <h2 id="admin-stats-heading" className="sr-only">
@@ -155,6 +188,8 @@ export default async function AdminPage() {
           it fulfilled here. No integrations to break during the pilot.
         </p>
       </section>
+
+      <Catalog rewards={rewards} redemptionCounts={redemptionCounts} />
     </div>
   );
 }

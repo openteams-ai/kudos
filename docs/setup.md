@@ -18,10 +18,11 @@ external services. To wire in Slack giving and Sign in with Slack, keep reading.
 > Slack connection). Keep it open in a tab while you work through this guide — it
 > turns green as you go.
 >
-> The page is **unlisted** (reachable by URL only, no nav link). In **development**
-> it's always open; in **production** it's restricted to an admin session
-> (`User.isAdmin`) or the `ENABLE_SETUP_PAGE=true` bootstrap flag — see
-> [Troubleshooting](#7-troubleshooting) for how to grant yourself admin.
+> The page is **unlisted** (URL only, no nav link) and **self-locking**: in
+> **development** it's always open; in **production** it stays open only until
+> you create your first admin — after that it's restricted to a signed-in admin
+> (`User.isAdmin`). Locked out? Set `isAdmin=1` on your user directly in the DB —
+> see [Troubleshooting](#7-troubleshooting).
 
 ---
 
@@ -270,7 +271,7 @@ Run `db:seed` first (it's part of the quickstart), then optionally `db:demo` on 
 | **Build fails offline fetching Google Fonts** | `next build` may try to fetch fonts from Google. If you're building offline, ensure network access during the build, or the font step will fail. Dev (`npm run dev:web`) is unaffected. |
 | **Seeded/demo data disappeared** | You ran `npm test`, which resets the dev SQLite DB. Re-run `npm run db:seed` (+ `npm run db:demo`). |
 | **Not sure what's configured** | Open **<http://localhost:3000/setup>** — the live checklist shows exactly which tokens, secrets, and connections are wired up. |
-| **`/setup` returns 404 in production** | By design — it's admin-only there. Grant yourself admin, then reload: SQLite `sqlite3 packages/db/prisma/dev.db "update User set isAdmin=1 where email='you@co.com';"` (or open `npx prisma studio` and tick `isAdmin`); Postgres `psql "$DATABASE_URL" -c "update \"User\" set \"isAdmin\"=true where email='you@co.com';"`. On a brand-new deploy where you can't sign in yet, set `ENABLE_SETUP_PAGE="true"` to bootstrap, then unset it once `isAdmin` is on your account. |
+| **`/setup` returns 404 in production** | By design — it's self-locking. It's open on a fresh deploy (no admin yet); once any admin exists it locks to signed-in admins. Locked out (or need back in)? Set `isAdmin` directly in the DB: SQLite `sqlite3 packages/db/prisma/dev.db "update User set isAdmin=1 where email='you@co.com';"` (or `npx prisma studio` → tick `isAdmin`); Postgres `psql "$DATABASE_URL" -c "update \"User\" set \"isAdmin\"=true where email='you@co.com';"`. |
 
 ---
 
@@ -293,6 +294,12 @@ redemption across the team with a **Mark fulfilled** button on open requests.
 Fulfillment is manual by design — an admin hands over the hoodie or books the
 day off, then marks the request fulfilled; no fulfillment integrations in the
 pilot.
+
+It also includes **reward catalog management**: reprice any reward inline, edit
+its name/emoji/description/category, add new rewards, and delete unused ones
+(rewards with redemption history can't be deleted, so history stays intact).
+Store pages reflect edits immediately. Note that `npm run db:demo` resyncs the
+catalog from `packages/db/prisma/catalog.ts`, so demo reruns reset any edits.
 
 Like `/setup`, the page is **unlisted** (reachable by URL only, no nav link) and
 it 404s in every environment unless the signed-in user has `User.isAdmin`. To

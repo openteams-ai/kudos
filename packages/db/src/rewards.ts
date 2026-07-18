@@ -72,6 +72,80 @@ export async function fulfillRedemption(id: string): Promise<{ updated: boolean 
   return { updated: false };
 }
 
+export class RewardValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RewardValidationError";
+  }
+}
+
+export class RewardInUseError extends Error {
+  constructor() {
+    super("reward has redemption history");
+    this.name = "RewardInUseError";
+  }
+}
+
+const MAX_REWARD_COST = 100_000;
+
+type RewardFields = {
+  name: string;
+  cost: number;
+  category: string;
+  emoji?: string | null;
+  description?: string | null;
+};
+
+// Validates whichever catalog fields are present, so it serves both create
+// (all fields) and update (a partial patch).
+function validateRewardFields(fields: Partial<RewardFields>) {
+  if (fields.name !== undefined && fields.name.trim().length === 0)
+    throw new RewardValidationError("Reward name is required.");
+  if (fields.cost !== undefined && (!Number.isInteger(fields.cost) || fields.cost < 1 || fields.cost > MAX_REWARD_COST))
+    throw new RewardValidationError(`Cost must be a whole number between 1 and ${MAX_REWARD_COST} points.`);
+  if (fields.category !== undefined && fields.category.trim().length === 0)
+    throw new RewardValidationError("Category is required.");
+}
+
+export async function createReward(input: RewardFields) {
+  validateRewardFields(input);
+  return prisma.reward.create({
+    data: {
+      name: input.name.trim(),
+      cost: input.cost,
+      category: input.category.trim(),
+      emoji: input.emoji?.trim() || null,
+      description: input.description?.trim() || null,
+    },
+  });
+}
+
+export async function updateReward(id: string, patch: Partial<RewardFields>) {
+  validateRewardFields(patch);
+  const data: Partial<RewardFields> = {};
+  if (patch.name !== undefined) data.name = patch.name.trim();
+  if (patch.cost !== undefined) data.cost = patch.cost;
+  if (patch.category !== undefined) data.category = patch.category.trim();
+  if (patch.emoji !== undefined) data.emoji = patch.emoji?.trim() || null;
+  if (patch.description !== undefined) data.description = patch.description?.trim() || null;
+  if (Object.keys(data).length === 0) return prisma.reward.findUniqueOrThrow({ where: { id } });
+  return prisma.reward.update({ where: { id }, data });
+}
+
+/**
+ * Hard-deletes a reward, refusing when any redemption references it so
+ * history stays intact. Future work: an `active`/archived flag on Reward so
+ * retired rewards can leave the store without losing their history — skipped
+ * for now to avoid a schema change.
+ */
+export async function deleteReward(id: string): Promise<void> {
+  const inUse = await prisma.redemption.count({ where: { rewardId: id } });
+  if (inUse > 0) throw new RewardInUseError();
+  // The FK on Redemption.rewardId backstops the race where a redeem lands
+  // between the count and the delete.
+  await prisma.reward.delete({ where: { id } });
+}
+
 /**
  * Snapshot counters for the admin dashboard: recognition activity this
  * calendar month plus the current fulfillment backlog.
