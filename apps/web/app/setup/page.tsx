@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
+import { notFound } from "next/navigation";
 import { getDatabaseStatus, getEnvStatus } from "../../lib/diagnostics";
+import { isSetupPageEnabled } from "./setup-enabled";
 import { CheckList, CheckRow, Code, type CheckItem } from "./check-ui";
 import { SlackTestButton } from "./slack-test-button";
 
@@ -22,6 +24,10 @@ function Ext({ href, children }: { href: string; children: ReactNode }) {
 }
 
 export default async function SetupPage() {
+  // In development the page is always available. In production it stays hidden
+  // (404) unless the operator opts in with ENABLE_SETUP_PAGE="true".
+  if (!isSetupPageEnabled()) notFound();
+
   const [db, env] = await Promise.all([getDatabaseStatus(), Promise.resolve(getEnvStatus())]);
 
   // ---- Database checks -----------------------------------------------------

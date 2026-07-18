@@ -4,9 +4,17 @@
 // auth.test. It reports the workspace + bot name on success and NEVER returns
 // or logs the token itself.
 
+import { isSetupPageEnabled } from "./setup-enabled";
+
 export type SlackTestResult =
   | { ok: true; team: string; botUser: string; url?: string }
   | { ok: false; error: string };
+
+// Simple in-memory rate limit: at most one auth.test call every 5s across the
+// process. Page gating doesn't cover server actions (they're callable directly),
+// so this guards against hammering Slack regardless of environment.
+const MIN_INTERVAL_MS = 5_000;
+let lastRunAt = 0;
 
 async function runSlackTest(): Promise<SlackTestResult> {
   const token = process.env.SLACK_BOT_TOKEN?.trim();
@@ -48,5 +56,17 @@ export async function slackTestAction(
   _prev: SlackTestResult | null,
   _formData: FormData,
 ): Promise<SlackTestResult> {
+  // Server actions are reachable directly, so re-check the gate here rather
+  // than relying on the page being hidden.
+  if (!isSetupPageEnabled()) {
+    return { ok: false, error: "Setup diagnostics are disabled on this server." };
+  }
+
+  const now = Date.now();
+  if (now - lastRunAt < MIN_INTERVAL_MS) {
+    return { ok: false, error: "Too many attempts — try again in a moment." };
+  }
+  lastRunAt = now;
+
   return runSlackTest();
 }

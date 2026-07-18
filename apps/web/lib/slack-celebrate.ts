@@ -5,6 +5,8 @@
  * Without SLACK_BOT_TOKEN + SLACK_KUDOS_CHANNEL it silently no-ops so local
  * dev keeps working with no Slack app configured. Uses plain fetch — no SDK.
  */
+import { escapeSlackText } from "./slack-escape";
+
 export function celebrateRedemption(input: {
   userName: string;
   slackUserId?: string | null;
@@ -16,9 +18,12 @@ export function celebrateRedemption(input: {
   const channel = process.env.SLACK_KUDOS_CHANNEL;
   if (!token?.trim() || !channel?.trim()) return;
 
-  const who = input.slackUserId ? `<@${input.slackUserId}>` : `*${input.userName}*`;
+  // Escape user-influenced strings; keep the <@…> mention markup we build ourselves.
+  const who = input.slackUserId
+    ? `<@${input.slackUserId}>`
+    : `*${escapeSlackText(input.userName)}*`;
   const emoji = input.rewardEmoji || "🎁";
-  const text = `${emoji} ${who} just redeemed *${input.rewardName}* (${input.cost} pts) — congrats! 🎉`;
+  const text = `${emoji} ${who} just redeemed *${escapeSlackText(input.rewardName)}* (${input.cost} pts) — congrats! 🎉`;
 
   fetch("https://slack.com/api/chat.postMessage", {
     method: "POST",

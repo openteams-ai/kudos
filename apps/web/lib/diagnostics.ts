@@ -33,7 +33,7 @@ export function classifyDatabaseUrl(raw: string | undefined): DbInfo {
     return {
       mode: "sqlite-default",
       label: "SQLite — bundled dev database (default)",
-      masked: "file:./packages/db/prisma/dev.db",
+      masked: "file:./packages/db/prisma/dev.db (bundled)",
     };
   }
   if (url.startsWith("file:")) {

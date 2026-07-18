@@ -1,6 +1,7 @@
 import type { App } from "@slack/bolt";
 import { prisma, giveKudos, remainingAllowance } from "@kudos/db";
 import { resolveUser } from "./userSync.js";
+import { escapeSlackText } from "./slackEscape.js";
 
 const CHANNEL = process.env.SLACK_KUDOS_CHANNEL || "#kudos";
 
@@ -55,7 +56,9 @@ export function registerKudosCommand(app: App) {
       const value = await prisma.value.findUniqueOrThrow({ where: { key: valueKey } });
       const posted = await client.chat.postMessage({
         channel: CHANNEL,
-        text: `${value.emoji} <@${body.user.id}> recognized <@${toSlackId}> — *${value.label}*\n> ${message}`,
+        // Escape the user-supplied "Why?" text so mrkdwn like <!channel> can't
+        // ping the room; the <@…> mentions we build ourselves stay intact.
+        text: `${value.emoji} <@${body.user.id}> recognized <@${toSlackId}> — *${value.label}*\n> ${escapeSlackText(message)}`,
       });
       if (posted.ts) await prisma.kudos.update({ where: { id: kudosId }, data: { slackMessageTs: posted.ts } });
     } catch (e) {

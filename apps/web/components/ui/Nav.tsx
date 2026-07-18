@@ -33,6 +33,13 @@ export function Nav({ user }: { user?: NavUser | null }) {
           >
             Rewards
           </a>
+          <a
+            href="/setup"
+            aria-label="Setup & diagnostics"
+            className="text-ink/60 transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-canvas rounded"
+          >
+            Setup
+          </a>
         </div>
         <div className="ml-auto">
           {user ? (
