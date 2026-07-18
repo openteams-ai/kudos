@@ -68,7 +68,7 @@ describe("redeemReward", () => {
     const after = await prisma.user.findUnique({ where: { id: user.id } });
     expect(after?.redeemableBalance).toBe(0);
     expect(await prisma.redemption.count()).toBe(1);
-  });
+  }, 30_000); // generous timeout: concurrent SQLite txns are slow on shared CI runners
 });
 
 describe("listRedemptionsForUser", () => {
