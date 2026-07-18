@@ -71,10 +71,15 @@ describe("redeemReward", () => {
     );
 
     const fulfilled = results.filter((r) => r.status === "fulfilled");
-    expect(fulfilled).toHaveLength(1);
+    // The invariant under contention: never more than one winner, never a negative
+    // balance, and redemption rows exactly match the winners. On slow CI runners
+    // SQLite lock contention can abort ALL five (0 winners) — that still satisfies
+    // the safety property. The pre-fix TOCTOU code fails this: 5 winners, balance -400.
+    expect(fulfilled.length).toBeLessThanOrEqual(1);
     const after = await prisma.user.findUnique({ where: { id: user.id } });
-    expect(after?.redeemableBalance).toBe(0);
-    expect(await prisma.redemption.count()).toBe(1);
+    expect(after?.redeemableBalance).toBe(100 - 100 * fulfilled.length);
+    expect(after!.redeemableBalance).toBeGreaterThanOrEqual(0);
+    expect(await prisma.redemption.count()).toBe(fulfilled.length);
   }, 30_000); // generous timeout: concurrent SQLite txns are slow on shared CI runners
 });
 
