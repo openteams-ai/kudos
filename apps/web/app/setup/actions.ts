@@ -58,7 +58,7 @@ export async function slackTestAction(
 ): Promise<SlackTestResult> {
   // Server actions are reachable directly, so re-check the gate here rather
   // than relying on the page being hidden.
-  if (!isSetupPageEnabled()) {
+  if (!(await isSetupPageEnabled())) {
     return { ok: false, error: "Setup diagnostics are disabled on this server." };
   }
 

@@ -24,9 +24,9 @@ function Ext({ href, children }: { href: string; children: ReactNode }) {
 }
 
 export default async function SetupPage() {
-  // In development the page is always available. In production it stays hidden
-  // (404) unless the operator opts in with ENABLE_SETUP_PAGE="true".
-  if (!isSetupPageEnabled()) notFound();
+  // Unlisted + access-gated. Dev: always. Prod: an admin session or the
+  // ENABLE_SETUP_PAGE bootstrap flag; otherwise 404 (never reveal it exists).
+  if (!(await isSetupPageEnabled())) notFound();
 
   const [db, env] = await Promise.all([getDatabaseStatus(), Promise.resolve(getEnvStatus())]);
 
