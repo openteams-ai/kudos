@@ -40,3 +40,6 @@ coverage/
 
 # SDD scratch
 .superpowers/
+
+# TS incremental build info
+*.tsbuildinfo
