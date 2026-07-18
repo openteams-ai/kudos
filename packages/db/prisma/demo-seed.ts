@@ -3,7 +3,7 @@
 // Safe to re-run: it clears prior activity (kudos/boosts/redemptions) and
 // regenerates, while preserving any real Slack-linked users.
 //   npm run db:demo
-import { prisma, giveKudos, addBoost, currentPeriod } from "../src/index.js";
+import { prisma, giveKudos, addBoost, currentPeriod, redeemReward, fulfillRedemption } from "../src/index.js";
 import { REWARDS as REWARD_DEFS } from "./catalog.js";
 
 const VALUE_DEFS = [
@@ -150,8 +150,39 @@ async function main() {
     const u = await prisma.user.findFirst({ where: { name } });
     if (u) await prisma.user.update({ where: { id: u.id }, data: { redeemableBalance } });
   };
-  await setBalance("Ada Lovelace", 320); // affords Team Lunch, Premium Parking, a Hoodie…
+  await setBalance("Ada Lovelace", 500); // lands on 320 after her redemptions below — affords Team Lunch, Premium Parking, a Hoodie…
   await setBalance("Ben Carter", 480); //  so close to the Extra Day Off — just save a bit more
+  await setBalance("Grace Hopper", 200);
+  await setBalance("Mia Chen", 250);
+
+  // 7b) A few redemptions with mixed statuses so the admin queue and reward
+  //     history look lived-in. They go through redeemReward, so costs come out
+  //     of the balances set above and the numbers add up (Ada: 500 − 180 = 320).
+  //     Ben Carter deliberately redeems nothing — he's the save-up story.
+  const redeem = async (
+    userName: string,
+    rewardName: string,
+    opts: { fulfilled?: boolean; daysAgo?: number } = {},
+  ) => {
+    const u = await prisma.user.findFirst({ where: { name: userName } });
+    const r = await prisma.reward.findFirst({ where: { name: rewardName } });
+    if (!u || !r) return;
+    try {
+      const { redemptionId } = await redeemReward({ userId: u.id, rewardId: r.id });
+      if (opts.daysAgo)
+        await prisma.redemption.update({
+          where: { id: redemptionId },
+          data: { createdAt: new Date(Date.now() - opts.daysAgo * DAY_MS) },
+        });
+      if (opts.fulfilled) await fulfillRedemption(redemptionId);
+    } catch {
+      /* insufficient balance — skip rather than fail the seed */
+    }
+  };
+  await redeem("Ada Lovelace", "Coffee House $25", { fulfilled: true, daysAgo: 6 });
+  await redeem("Mia Chen", "Enamel Pin Set", { fulfilled: true, daysAgo: 4 });
+  await redeem("Grace Hopper", "Donut & Coffee $10", { daysAgo: 2 });
+  await redeem("Ada Lovelace", "Sticker Pack", { daysAgo: 1 });
 
   // 8) Ada doubles as the demo admin so /admin is showable (sign in as her, or
   //    set DEV_PREVIEW_USER="Ada Lovelace"). Ben stays non-admin on purpose.
@@ -161,8 +192,11 @@ async function main() {
   const { start } = currentPeriod();
   const thisMonth = await prisma.kudos.count({ where: { createdAt: { gte: start } } });
   const topBalance = await prisma.user.findFirst({ orderBy: { redeemableBalance: "desc" } });
+  const redemptions = await prisma.redemption.count();
+  const pending = await prisma.redemption.count({ where: { status: "requested" } });
   console.log(
-    `Demo data ready: ${users.length} users, ${kudos.length} kudos (${thisMonth} this month), ${boosts} boosts. ` +
+    `Demo data ready: ${users.length} users, ${kudos.length} kudos (${thisMonth} this month), ${boosts} boosts, ` +
+      `${redemptions} redemptions (${pending} pending). ` +
       `Top redeemable balance: ${topBalance?.name} @ ${topBalance?.redeemableBalance} pts. ` +
       `Admin: Ada Lovelace (/admin).`
   );
