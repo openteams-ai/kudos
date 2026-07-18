@@ -44,8 +44,8 @@ services:
   # Optional PostgreSQL backend. The images must be built with the Postgres
   # Prisma client, and the app pointed at the db service:
   #   1. docker compose build --build-arg DB_PROVIDER=postgres
-  #   2. set in .env.docker:
-  #        DATABASE_URL=postgresql://kudos:kudos@db:5432/kudos?schema=public
+  #   2. set in .env.docker (match POSTGRES_PASSWORD below):
+  #        DATABASE_URL=postgresql://kudos:change-me-local-kudos-pw@db:5432/kudos?schema=public
   #   3. docker compose --profile postgres up -d db
   #   4. docker compose run --rm web npm run db:pg:migrate   # apply migrations
   #      docker compose run --rm web npm run db:seed          # seed data
@@ -57,7 +57,9 @@ services:
     profiles: ["postgres"]
     environment:
       POSTGRES_USER: kudos
-      POSTGRES_PASSWORD: kudos
+      # Placeholder for local use only — CHANGE THIS for anything reachable
+      # beyond your machine, and keep DATABASE_URL above in sync.
+      POSTGRES_PASSWORD: change-me-local-kudos-pw
       POSTGRES_DB: kudos
     volumes:
       - kudos-pg:/var/lib/postgresql/data

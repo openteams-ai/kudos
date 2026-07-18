@@ -21,11 +21,19 @@ build
 **/*.db
 **/prisma/dev.db*
 
-# Secrets / env — never bake these into an image
+# Secrets / env — never bake these into an image.
+# NOTE: unlike .gitignore, .dockerignore patterns are NOT recursive by default —
+# a bare `.env` only matches the repo root, so subdir secrets like
+# apps/slack/.env would still be COPY'd in. The `**/` variants cover subdirs.
 .env
 .env.*
+**/.env
+**/.env.*
+# ...but keep the committed, secret-free example files available.
 !.env.example
 !.env.local.example
+!**/.env.example
+!**/.env.local.example
 
 # Docs and repo meta not needed at build time
 docs

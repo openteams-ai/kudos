@@ -84,8 +84,10 @@ Postgres path starts with a rebuild:
 # 1. Build the images with the Postgres Prisma client.
 docker compose build --build-arg DB_PROVIDER=postgres
 
-# 2. In .env.docker, point the app at the bundled Postgres:
-#    DATABASE_URL=postgresql://kudos:kudos@db:5432/kudos?schema=public
+# 2. In .env.docker, point the app at the bundled Postgres. The password must
+#    match POSTGRES_PASSWORD in docker-compose.yml — change both (they ship with
+#    a local-only placeholder) before exposing Postgres beyond your machine:
+#    DATABASE_URL=postgresql://kudos:change-me-local-kudos-pw@db:5432/kudos?schema=public
 
 # 3. Start the db service (profile-gated) and wait for it to be healthy.
 docker compose --profile postgres up -d db
