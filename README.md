@@ -5,6 +5,8 @@
 
 > **Bounty Hunters — Kudos Program** hackathon entry (Engineering Division, June 30 – July 20, 2026).
 
+**🌐 Showcase site:** [brandonrc.github.io/kudos-bounty](https://brandonrc.github.io/kudos-bounty/) — a 60-second visual tour for judges.
+
 Give a teammate real recognition in Slack in about ten seconds — `/kudos`, pick a person, a value, and a reason — and watch it land in a live web feed. Points accrue toward rewards people actually want, and the whole thing is built as a **behavioral nudge**: recognition happens where work already happens, giving is deliberately scarce so it stays thoughtful, and there's no leaderboard to game. Inspired by Nectar / Bonusly and grounded in behavioral-science research (see [`docs/research/`](docs/research/README.md)).
 
 ## Status
@@ -137,6 +139,7 @@ What a deployer must do to run this beyond a local demo:
 | Path | Contents |
 |---|---|
 | [`docs/setup.md`](docs/setup.md) | **Get this running for your team** — end-to-end setup: local quickstart, Slack connection, Sign in with Slack, database, Docker, troubleshooting. Start here. |
+| [`docs/architecture.md`](docs/architecture.md) | **System architecture** — context & data-model diagrams, give/redeem sequences, module map, and the key design decisions (with trust boundaries). |
 | [`docs/database.md`](docs/database.md) | Database modes in depth — zero-config SQLite, custom SQLite path, and PostgreSQL (migrations, bundled Postgres). |
 | [`docs/docker.md`](docs/docker.md) | Running Kudos with Docker Compose (web app + optional bundled Postgres). |
 | [`docs/brief/`](docs/brief/) | The original assignment + a plain-text transcription — the source of truth for scope and judging criteria. |
