@@ -38,6 +38,9 @@ To rebuild a single image directly (without compose):
 ```bash
 docker build --target web   -t kudos:web   .
 docker build --target slack -t kudos:slack .
+
+# For a Postgres deployment, bake the Postgres Prisma client:
+docker build --target web --build-arg DB_PROVIDER=postgres -t kudos:web .
 ```
 
 ## Database modes
@@ -72,26 +75,44 @@ docker compose down -v      # removes the kudos-db volume
 A `postgres:16-alpine` service ships behind the `postgres` compose profile with a
 healthcheck and its own `kudos-pg` volume.
 
+Postgres uses a **different Prisma schema** (`prisma/schema.postgres.prisma`,
+provider `postgresql`) and a migration-based flow. The image must be built with
+the Postgres client — the default SQLite client cannot talk to Postgres — so the
+Postgres path starts with a rebuild:
+
 ```bash
-# 1. In .env.docker, point the app at the bundled Postgres:
+# 1. Build the images with the Postgres Prisma client.
+docker compose build --build-arg DB_PROVIDER=postgres
+
+# 2. In .env.docker, point the app at the bundled Postgres:
 #    DATABASE_URL=postgresql://kudos:kudos@db:5432/kudos?schema=public
 
-# 2. Bring up the db (and app) with the profile enabled:
+# 3. Start the db service (profile-gated) and wait for it to be healthy.
 docker compose --profile postgres up -d db
-docker compose run --rm web npm run db:push
+
+# 4. Apply migrations, then seed. Use db:pg:migrate (migrate deploy against the
+#    Postgres schema) — NOT db:push, which targets SQLite and fails with a
+#    provider/URL mismatch (Prisma P1012).
+docker compose run --rm web npm run db:pg:migrate
 docker compose run --rm web npm run db:seed
+
+# 5. Start everything.
 docker compose --profile postgres up
 ```
 
 The service name `db` is the hostname on the compose network, which is why the
-URL host is `db`.
+URL host is `db`. For migration internals and adding future migrations, see
+[`docs/database.md`](./database.md).
 
 ## Environment variables
 
 Put these in `.env.docker` (referenced by both services in
 `docker-compose.yml`). The file is optional at boot — the containers start
 without it — but the web app needs `AUTH_SECRET` and the bot needs its tokens to
-be useful. Full reference: [`apps/web/.env.local.example`](../apps/web/.env.local.example)
+be useful. (The optional `env_file` object form used in `docker-compose.yml`
+requires **Docker Compose v2.24+**; on older versions, create `.env.docker`
+before running or drop the `required: false` line.) Full reference:
+[`apps/web/.env.local.example`](../apps/web/.env.local.example)
 and [`apps/slack/.env.example`](../apps/slack/.env.example).
 
 | Variable              | Used by     | Required?                     | Notes                                                                 |

@@ -41,10 +41,17 @@ services:
       - kudos-db:/app/packages/db/prisma
     restart: unless-stopped
 
-  # Optional PostgreSQL backend. Enable with:  docker compose --profile postgres up
-  # Then point the app at it by setting in .env.docker:
-  #   DATABASE_URL=postgresql://kudos:kudos@db:5432/kudos?schema=public
-  # (Run db:push + db:seed against the new database after switching.)
+  # Optional PostgreSQL backend. The images must be built with the Postgres
+  # Prisma client, and the app pointed at the db service:
+  #   1. docker compose build --build-arg DB_PROVIDER=postgres
+  #   2. set in .env.docker:
+  #        DATABASE_URL=postgresql://kudos:kudos@db:5432/kudos?schema=public
+  #   3. docker compose --profile postgres up -d db
+  #   4. docker compose run --rm web npm run db:pg:migrate   # apply migrations
+  #      docker compose run --rm web npm run db:seed          # seed data
+  #   5. docker compose --profile postgres up
+  # (Do NOT use db:push here — that targets the SQLite schema and fails with a
+  # provider/URL mismatch. See docs/docker.md.)
   db:
     image: postgres:16-alpine
     profiles: ["postgres"]

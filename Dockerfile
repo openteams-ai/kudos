@@ -28,16 +28,31 @@ COPY apps/slack/package.json ./apps/slack/
 RUN npm ci
 
 # --- build ------------------------------------------------------------------
-# Bring in the full source, generate the Prisma client, and build the Next app.
-# DATABASE_URL is a throwaway value: `prisma generate` errors if the datasource
-# references an unset env var, and it is never read at build time (all DB-backed
-# pages are `force-dynamic`). It is NOT carried into the runtime stages.
+# Bring in the full source, generate the Prisma client for the selected DB
+# provider, and build the Next app.
+#
+#   DB_PROVIDER=sqlite   (default) -> client from prisma/schema.prisma
+#   DB_PROVIDER=postgres           -> client from prisma/schema.postgres.prisma
+#
+# Build with `--build-arg DB_PROVIDER=postgres` for a Postgres deployment; the
+# baked client must match the target database or it cannot talk to it.
+#
+# The exported DATABASE_URL is a throwaway matching the provider's protocol:
+# `prisma generate` (and PrismaClient construction during `next build`) validate
+# the URL scheme, but nothing connects at build time — all DB-backed pages are
+# `force-dynamic`. It is NOT carried into the runtime stages.
 FROM base AS build
-ENV DATABASE_URL=file:/tmp/build.db
+ARG DB_PROVIDER=sqlite
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npm run db:generate
-RUN npm -w @kudos/web run build
+RUN if [ "$DB_PROVIDER" = "postgres" ]; then \
+      export DATABASE_URL="postgresql://build:build@localhost:5432/build"; \
+      npm run db:pg:generate; \
+    else \
+      export DATABASE_URL="file:/tmp/build.db"; \
+      npm run db:generate; \
+    fi && \
+    npm -w @kudos/web run build
 
 # --- runtime ----------------------------------------------------------------
 # Shared runtime layer for both targets: production env + the fully built
