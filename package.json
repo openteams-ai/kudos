@@ -8,6 +8,10 @@
     "db:push": "npm -w @kudos/db run push",
     "db:seed": "npm -w @kudos/db run seed",
     "db:demo": "npm -w @kudos/db run demo",
+    "db:pg:schema": "npm -w @kudos/db run pg:schema",
+    "db:pg:schema:check": "npm -w @kudos/db run pg:schema:check",
+    "db:pg:generate": "npm -w @kudos/db run pg:generate",
+    "db:pg:migrate": "npm -w @kudos/db run pg:migrate",
     "dev:slack": "npm -w @kudos/slack run dev",
     "dev:web": "npm -w @kudos/web run dev",
     "test": "npm -w @kudos/db run test"

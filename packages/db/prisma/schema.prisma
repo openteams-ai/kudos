@@ -2,9 +2,17 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// DATABASE_URL selects the database at runtime:
+//   unset          -> falls back to the bundled SQLite dev.db (see src/client.ts
+//                     for the runtime default and the db:* scripts for the CLI default)
+//   file:...        -> a custom SQLite file
+//   postgres://...  -> use the generated schema.postgres.prisma instead (see docs/database.md)
+// The provider below is static (Prisma limitation); the PostgreSQL variant is
+// generated from THIS file by scripts/gen-postgres-schema.ts and must never be
+// hand-edited. Keep this the single source of truth for the data model.
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model Team {

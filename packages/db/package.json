@@ -4,11 +4,15 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "generate": "prisma generate",
-    "push": "prisma db push",
+    "generate": "DATABASE_URL=\"${DATABASE_URL:-file:./dev.db}\" prisma generate",
+    "push": "DATABASE_URL=\"${DATABASE_URL:-file:./dev.db}\" prisma db push",
     "seed": "tsx prisma/seed.ts",
     "demo": "tsx prisma/demo-seed.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pg:schema": "tsx scripts/gen-postgres-schema.ts",
+    "pg:schema:check": "tsx scripts/gen-postgres-schema.ts --check",
+    "pg:generate": "prisma generate --schema=prisma/schema.postgres.prisma",
+    "pg:migrate": "prisma migrate deploy --schema=prisma/schema.postgres.prisma"
   },
   "dependencies": { "@prisma/client": "^5.20.0" },
   "devDependencies": {
