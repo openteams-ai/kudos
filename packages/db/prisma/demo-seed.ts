@@ -153,12 +153,18 @@ async function main() {
   await setBalance("Ada Lovelace", 320); // affords Team Lunch, Premium Parking, a Hoodie…
   await setBalance("Ben Carter", 480); //  so close to the Extra Day Off — just save a bit more
 
+  // 8) Ada doubles as the demo admin so /admin is showable (sign in as her, or
+  //    set DEV_PREVIEW_USER="Ada Lovelace"). Ben stays non-admin on purpose.
+  const ada = await prisma.user.findFirst({ where: { name: "Ada Lovelace" } });
+  if (ada) await prisma.user.update({ where: { id: ada.id }, data: { isAdmin: true } });
+
   const { start } = currentPeriod();
   const thisMonth = await prisma.kudos.count({ where: { createdAt: { gte: start } } });
   const topBalance = await prisma.user.findFirst({ orderBy: { redeemableBalance: "desc" } });
   console.log(
     `Demo data ready: ${users.length} users, ${kudos.length} kudos (${thisMonth} this month), ${boosts} boosts. ` +
-      `Top redeemable balance: ${topBalance?.name} @ ${topBalance?.redeemableBalance} pts.`
+      `Top redeemable balance: ${topBalance?.name} @ ${topBalance?.redeemableBalance} pts. ` +
+      `Admin: Ada Lovelace (/admin).`
   );
 }
 

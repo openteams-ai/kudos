@@ -281,5 +281,28 @@ Run `db:seed` first (it's part of the quickstart), then optionally `db:demo` on 
 - **[`docs/docker.md`](docker.md)** — containerized run.
 - **[`docs/BACKLOG.md`](BACKLOG.md)** — what's shipped vs. planned.
 - **[`docs/decisions/decision-log.md`](decisions/decision-log.md)** — the rationale behind each design choice.
-</content>
-</invoke>
+
+---
+
+## Admin dashboard
+
+**<http://localhost:3000/admin>** is a small ops view for whoever runs the
+program: a stats row (kudos given this month, points awarded — kudos plus
+boosts — and pending redemptions) and the **redemption queue**, listing every
+redemption across the team with a **Mark fulfilled** button on open requests.
+Fulfillment is manual by design — an admin hands over the hoodie or books the
+day off, then marks the request fulfilled; no fulfillment integrations in the
+pilot.
+
+Like `/setup`, the page is **unlisted** (reachable by URL only, no nav link) and
+it 404s in every environment unless the signed-in user has `User.isAdmin`. To
+grant admin on the dev SQLite database:
+
+```bash
+sqlite3 packages/db/prisma/dev.db "update User set isAdmin=1 where name='Your Name';"
+```
+
+…or open `npx prisma studio` and tick `isAdmin` on your user (Postgres: same
+`update` via `psql`, as in [Troubleshooting](#7-troubleshooting)). `npm run
+db:demo` already makes **Ada Lovelace** an admin, so a demo can show `/admin`
+right away.

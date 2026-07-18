@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 import { prisma } from "./client.js";
-import { redeemReward, listRedemptionsForUser } from "./rewards.js";
+import {
+  redeemReward,
+  listRedemptionsForUser,
+  listAllRedemptions,
+  fulfillRedemption,
+  adminStats,
+} from "./rewards.js";
+import { currentPeriod } from "./period.js";
 
 async function reset() {
   // Also clear Boost/Kudos: suites share one on-disk SQLite db and run
@@ -104,5 +111,97 @@ describe("listRedemptionsForUser", () => {
 
     expect(await listRedemptionsForUser(ada.id)).toHaveLength(0);
     expect(await listRedemptionsForUser(ben.id)).toHaveLength(1);
+  });
+});
+
+describe("listAllRedemptions", () => {
+  beforeEach(reset);
+  afterAll(reset);
+
+  it("returns every user's redemptions newest first with reward and user joined", async () => {
+    const team = await prisma.team.create({ data: { name: "Eng" } });
+    const ada = await prisma.user.create({ data: { name: "Ada", teamId: team.id, redeemableBalance: 100 } });
+    const ben = await prisma.user.create({ data: { name: "Ben", teamId: team.id, redeemableBalance: 100 } });
+    const sticker = await prisma.reward.create({ data: { name: "Sticker", cost: 20, category: "Company Swag", emoji: "🎨" } });
+    const pin = await prisma.reward.create({ data: { name: "Pin", cost: 30, category: "Company Swag" } });
+
+    await redeemReward({ userId: ada.id, rewardId: sticker.id });
+    await redeemReward({ userId: ben.id, rewardId: pin.id });
+
+    const all = await listAllRedemptions();
+
+    expect(all).toHaveLength(2);
+    expect(all[0].user.name).toBe("Ben");
+    expect(all[0].reward.name).toBe("Pin");
+    expect(all[1].user.name).toBe("Ada");
+    expect(all[1].reward.emoji).toBe("🎨");
+  });
+});
+
+describe("fulfillRedemption", () => {
+  beforeEach(reset);
+  afterAll(reset);
+
+  it("flips a requested redemption to fulfilled", async () => {
+    const team = await prisma.team.create({ data: { name: "Eng" } });
+    const user = await prisma.user.create({ data: { name: "Ada", teamId: team.id, redeemableBalance: 50 } });
+    const reward = await prisma.reward.create({ data: { name: "Sticker", cost: 20, category: "swag" } });
+    const { redemptionId } = await redeemReward({ userId: user.id, rewardId: reward.id });
+
+    expect(await fulfillRedemption(redemptionId)).toEqual({ updated: true });
+
+    const after = await prisma.redemption.findUnique({ where: { id: redemptionId } });
+    expect(after?.status).toBe("fulfilled");
+  });
+
+  it("is a no-op on an already-fulfilled redemption", async () => {
+    const team = await prisma.team.create({ data: { name: "Eng" } });
+    const user = await prisma.user.create({ data: { name: "Ada", teamId: team.id, redeemableBalance: 50 } });
+    const reward = await prisma.reward.create({ data: { name: "Sticker", cost: 20, category: "swag" } });
+    const { redemptionId } = await redeemReward({ userId: user.id, rewardId: reward.id });
+
+    await fulfillRedemption(redemptionId);
+    expect(await fulfillRedemption(redemptionId)).toEqual({ updated: false });
+
+    const after = await prisma.redemption.findUnique({ where: { id: redemptionId } });
+    expect(after?.status).toBe("fulfilled");
+  });
+
+  it("throws for an unknown redemption id", async () => {
+    await expect(fulfillRedemption("nope")).rejects.toThrow();
+  });
+});
+
+describe("adminStats", () => {
+  beforeEach(reset);
+  afterAll(reset);
+
+  it("counts this month's kudos and awarded points (incl. boosts) and the pending queue", async () => {
+    const team = await prisma.team.create({ data: { name: "Eng" } });
+    const ada = await prisma.user.create({ data: { name: "Ada", teamId: team.id, redeemableBalance: 100 } });
+    const ben = await prisma.user.create({ data: { name: "Ben", teamId: team.id } });
+    const { start } = currentPeriod();
+    const lastMonth = new Date(start.getTime() - 1000);
+    const base = { fromUserId: ada.id, toUserId: ben.id, teamId: team.id, valueKey: "teamwork", message: "great work", points: 10 };
+
+    // Two kudos this month, one from last month (excluded).
+    const k1 = await prisma.kudos.create({ data: base });
+    await prisma.kudos.create({ data: base });
+    await prisma.kudos.create({ data: { ...base, createdAt: lastMonth } });
+    // One boost this month, one from last month (excluded).
+    await prisma.boost.create({ data: { kudosId: k1.id, fromUserId: ada.id, points: 1 } });
+    await prisma.boost.create({ data: { kudosId: k1.id, fromUserId: ben.id, points: 1, createdAt: lastMonth } });
+
+    // Two redemptions; fulfilling one leaves one pending.
+    const reward = await prisma.reward.create({ data: { name: "Sticker", cost: 20, category: "swag" } });
+    await redeemReward({ userId: ada.id, rewardId: reward.id });
+    const { redemptionId } = await redeemReward({ userId: ada.id, rewardId: reward.id });
+    await fulfillRedemption(redemptionId);
+
+    expect(await adminStats()).toEqual({
+      kudosThisMonth: 2,
+      pointsAwardedThisMonth: 21,
+      pendingRedemptions: 1,
+    });
   });
 });
