@@ -120,6 +120,9 @@ What a deployer must do to run this beyond a local demo:
 
 | Path | Contents |
 |---|---|
+| [`docs/setup.md`](docs/setup.md) | **Get this running for your team** — end-to-end setup: local quickstart, Slack connection, Sign in with Slack, database, Docker, troubleshooting. Start here. |
+| [`docs/database.md`](docs/database.md) | Database modes in depth — zero-config SQLite, custom SQLite path, and PostgreSQL (migrations, bundled Postgres). |
+| [`docs/docker.md`](docs/docker.md) | Running Kudos with Docker Compose (web app + optional bundled Postgres). |
 | [`docs/brief/`](docs/brief/) | The original assignment + a plain-text transcription — the source of truth for scope and judging criteria. |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | Everything requested, with shipped / in-design / planned status. |
 | [`docs/decisions/decision-log.md`](docs/decisions/decision-log.md) | Chronological log of every design choice and its rationale. |
