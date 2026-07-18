@@ -51,12 +51,12 @@ Two more catches came during the core build and are logged in **D31**: a circula
 
 - **Claude Code** as the development environment — reading the codebase, writing specs and code, running tests, and driving git.
 - **Agent teams**: parallel specialist agents (research, seeding, design, store, database, Docker, docs) coordinated by an orchestrator via messages, with clean-context reviewer agents gating each tranche. The disjoint, scoped commit structure in the git log is the visible fingerprint of this division of labor.
-- **Test-driven where it counts**: the point economy (allowance, giving, redeeming) is covered by unit tests — **22 passing** (`npm test`, `packages/db/src/*.test.ts`).
+- **Test-driven where it counts**: the point economy (allowance, giving, redeeming) is covered by unit tests — **34 passing** (`npm test`, `packages/db/src/*.test.ts`).
 
 ## Honest limitations
 
 AI-generated code was not trusted on sight. It was gated by:
-- **Automated tests** (22 passing) — the redeem race fix, for instance, was pinned by a concurrency test, not just asserted safe.
+- **Automated tests** (34 passing) — the redeem race fix, for instance, was pinned by a concurrency test, not just asserted safe.
 - **Independent review re-runs** by fresh agents, which is how bugs 1–6 above were found.
 - **Live verification against real systems** — real Docker image builds, a real PostgreSQL migrate, and testing in a live Slack workspace (Socket Mode).
 
