@@ -31,6 +31,7 @@ Legend: paths are relative to the repo root. Commit SHAs are on `main`.
 | Adversarial review by fresh agents caught **real** bugs — quality, not just speed. | Security: `0c25884 fix(redeem): derive user from session, close IDOR` and `d7e783a fix(db): race-safe redemption with conditional decrement`. Accessibility: `ce79110 fix(web): a11y — announce redeem success, contrast, filter-button semantics`. |
 | Prior review catches during the core build. | Decision D31 lists fixes found in review: circular-import TDZ crash → register-function pattern; double-`ack()` guard; `addBoost` P2002 idempotency (`packages/db/src/kudos.ts`). |
 | The whole process is auditable. | `docs/decisions/decision-log.md` (chronological, D1–D31), `docs/superpowers/plans/` and `docs/superpowers/specs/` (plans and specs the agents worked from). |
+| Full evidence map for this criterion, tied to commit SHAs. | `docs/ai-development.md` — the AI-development story: specs-before-code chronology, parallel scoped build, and the "caught by AI review" table (IDOR `0c25884`, redeem race `d7e783a`, WCAG `ce79110`, Docker secret leak `e04f9f3`, Slack injection `d10a947`, dotenv `a0079be`). |
 
 ---
 

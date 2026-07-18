@@ -145,6 +145,7 @@ What a deployer must do to run this beyond a local demo:
 | [`docs/research/`](docs/research/README.md) | Behavioral-science research reports and citations behind the design (monthly cap, no leaderboard, reward-the-recognized). |
 | [`docs/design/`](docs/design/) | Scale considerations and the simulation approach. |
 | [`docs/superpowers/specs/`](docs/superpowers/specs/) | Living design specs (core product, Slack SSO, UI refactor). |
+| [`docs/ai-development.md`](docs/ai-development.md) | How AI built this project — an evidence map (specs-before-code, parallel build, and the real bugs adversarial AI review caught) tied to commit SHAs. |
 
 ---
 
