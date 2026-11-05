@@ -11,6 +11,8 @@ Give a teammate real recognition in Slack in about ten seconds — `/kudos`, pic
 
 ## Status
 
+> **Production readiness (2026-11-05):** review, infrastructure design, support model, and security threat model live in [`docs/production-readiness/`](docs/production-readiness/README.md); work is tracked in the `production-readiness` epics (#18–#24).
+
 🟢 **Built and running on `main`.** Core MVP shipped: `/kudos` giving in Slack, reaction boosts, a live recognition feed, Sign in with Slack, a 26-item rewards store, one-click redeem, and per-user redemption history. 22 tests pass (`npm test`). See [`docs/BACKLOG.md`](docs/BACKLOG.md) for what's shipped vs. planned and [`docs/decisions/decision-log.md`](docs/decisions/decision-log.md) for the rationale behind each choice.
 
 ## What it does
