@@ -1,0 +1,19 @@
+{
+  "name": "kudos-slack-ui-canary",
+  "private": true,
+  "type": "module",
+  "description": "Spike: drive the Slack web client with Playwright to exercise /kudos end to end. Standalone on purpose — not part of the root workspace until it proves itself (see #22).",
+  "scripts": {
+    "login": "playwright test --project=setup --headed",
+    "smoke": "playwright test --project=smoke",
+    "test": "playwright test --project=slack",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@slack/web-api": "^7.8.0",
+    "@types/node": "^20.14.0",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.6.0"
+  }
+}
